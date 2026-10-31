@@ -19,19 +19,29 @@ URL="https://evaristocuesta.github.io/clovance/install/install.sh"
 # may still be reading the rest of this file from stdin).
 DIR=""
 case "$0" in
-  sh|dash|bash|ash|ksh|-sh|*/sh) DIR="" ;;
-  *) DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd) ;;
+  */*) DIR=$(CDPATH='' cd -- "${0%/*}" && pwd) ;;
 esac
 
+DOWNLOADED=""
 if [ -z "$DIR" ] || [ ! -f "$DIR/install.sh" ]; then
-  DIR=$(mktemp -d)
+  # Not mktemp: GNU and BSD disagree on the template argument.
+  DIR="${TMPDIR:-/tmp}/clovance-install.$$"
+  mkdir -p "$DIR"
   echo "==> Downloading installer..."
   curl -fsSL "$URL" -o "$DIR/install.sh"
-  trap 'rm -rf "$DIR"' EXIT INT TERM
+  DOWNLOADED=1
 fi
 
+cleanup() {
+  if [ -n "$DOWNLOADED" ]; then rm -rf "$DIR"; fi
+}
+trap cleanup EXIT
+trap 'cleanup; exit 130' INT
+trap 'cleanup; exit 143' TERM
+
+# No "exec": the EXIT trap has to run to remove the downloaded copy.
 if [ ! -t 0 ] && ( : </dev/tty ) 2>/dev/null; then
-  exec sh "$DIR/install.sh" uninstall < /dev/tty
+  sh "$DIR/install.sh" uninstall < /dev/tty
+else
+  sh "$DIR/install.sh" uninstall
 fi
-
-exec sh "$DIR/install.sh" uninstall
