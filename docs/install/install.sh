@@ -115,11 +115,46 @@ has_data() {
 }
 
 assert_compose_running() {
-  _running="$(docker compose ps --status running -q | wc -l | tr -d ' ')"
-  if [ "$_running" -lt 2 ]; then
-    err "Clovance did not start correctly ($_running container(s) running)."
-    err "Check 'docker compose ps' and 'docker compose logs' in $INSTALL_DIR."
-    exit 1
+  # A container that crashes right after "up -d" shows up as "restarting", not
+  # running, so wait a bit for the stack to settle before declaring success.
+  _timeout="${CLOVANCE_VERIFY_TIMEOUT:-60}"
+  _i=0
+  while [ "$_i" -lt "$_timeout" ]; do
+    _states="$(docker compose ps --format '{{.State}}' 2>/dev/null || true)"
+    _running=0
+    _broken=0
+    for _s in $_states; do
+      case "$_s" in
+        running) _running=$((_running + 1)) ;;
+        *) _broken=$((_broken + 1)) ;;
+      esac
+    done
+    if [ "$_running" -ge 2 ] && [ "$_broken" -eq 0 ]; then return 0; fi
+    _i=$((_i + 1))
+    sleep 1
+  done
+  err "Clovance did not start correctly ($_running container(s) running, $_broken not running)."
+  err "Check 'docker compose ps' and 'docker compose logs' in $INSTALL_DIR."
+  exit 1
+}
+
+ensure_jwt_writable() {
+  # The API image runs as the unprivileged "app" user (uid 1654) and writes its
+  # JWT signing key to /home/app (the "jwt" bind mount). On Linux and WSL the
+  # bind mount keeps the host ownership, so a directory created by the
+  # installing user is not writable by the container and the API crash-loops
+  # with "Access to the path '/home/app/jwt.key' is denied". Docker Desktop on
+  # Windows/macOS ignores ownership, which is why this only bites on Linux.
+  case "$(uname -s)" in
+    Linux*) ;;
+    *) return 0 ;;
+  esac
+  _dir="$VOLUME_PATH/jwt"
+  [ -d "$_dir" ] || return 0
+  if [ "$(id -u)" = "0" ]; then
+    chown -R 1654:1654 "$_dir" 2>/dev/null || chmod 0777 "$_dir" 2>/dev/null || true
+  else
+    chmod 0777 "$_dir" 2>/dev/null || true
   fi
 }
 
@@ -293,6 +328,7 @@ do_install() {
 
   mkdir -p "$INSTALL_DIR"
   mkdir -p "$VOLUME_PATH/postgres" "$VOLUME_PATH/jwt"
+  ensure_jwt_writable
 
   API_IMAGE="ghcr.io/evaristocuesta/clovance/clovance-api:${VERSION}"
   FE_IMAGE="ghcr.io/evaristocuesta/clovance/clovance-frontend:${VERSION}"

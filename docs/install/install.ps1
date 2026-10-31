@@ -116,11 +116,21 @@ function Test-HasExistingData {
 }
 
 function Assert-ComposeRunning {
-  param([string]$InstallDir, [int]$Minimum = 2)
-  $running = @(& docker compose ps --status running -q)
-  if ($LASTEXITCODE -ne 0 -or $running.Count -lt $Minimum) {
-    throw "Clovance did not start correctly ($($running.Count) container(s) running). Check 'docker compose ps' and 'docker compose logs' in $InstallDir."
-  }
+  param([string]$InstallDir, [int]$Minimum = 2, [int]$TimeoutSeconds = 60)
+  if ($env:CLOVANCE_VERIFY_TIMEOUT) { $TimeoutSeconds = [int]$env:CLOVANCE_VERIFY_TIMEOUT }
+  # A container that crashes right after "up -d" shows up as "restarting", not
+  # running, so wait a bit for the stack to settle before declaring success.
+  $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+  $running = 0
+  $broken = 0
+  do {
+    $states = @(& docker compose ps --format '{{.State}}' 2>$null)
+    $running = @($states | Where-Object { $_ -eq 'running' }).Count
+    $broken = @($states | Where-Object { $_ -and $_ -ne 'running' }).Count
+    if ($running -ge $Minimum -and $broken -eq 0) { return }
+    Start-Sleep -Seconds 1
+  } while ((Get-Date) -lt $deadline)
+  throw "Clovance did not start correctly ($running container(s) running, $broken not running). Check 'docker compose ps' and 'docker compose logs' in $InstallDir."
 }
 
 function ToPosixPath($p) {
