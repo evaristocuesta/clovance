@@ -147,6 +147,8 @@ On Linux/macOS, if the data directory was created by the container (root-owned),
 - **Compose v2 missing**: upgrade Docker or install the Compose plugin.
 - **Permission denied on data removal (Linux)**: use `sudo rm -rf <install-dir>/data`.
 - **Port already in use**: choose a different frontend port during install, or stop the conflicting service.
+- **The API restarts in a loop (Linux / WSL)**: `docker compose logs clovance-apiservice` shows `Access to the path '/home/app/jwt.key' is denied`. The API image runs as the unprivileged `app` user (uid 1654) and the `data/jwt` bind mount keeps the host ownership, so the container cannot write its signing key. The installer now fixes this when it creates the directory; for an existing install run `chmod 0777 <install-dir>/data/jwt` (or `sudo chown -R 1654:1654 <install-dir>/data/jwt`) and `docker compose up -d`. Docker Desktop on Windows/macOS is not affected because it does not enforce ownership on bind mounts.
+- **"Clovance did not start correctly"**: at least one container is not running. The installer waits up to 60 seconds for the stack to settle, so a container stuck in `restarting` fails the install instead of reporting success. Check `docker compose ps` and `docker compose logs` in the install directory.
 
 ## 📚 Related documentation
 
