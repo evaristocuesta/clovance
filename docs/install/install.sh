@@ -24,6 +24,9 @@ DEFAULT_DASHBOARD_BIND="127.0.0.1"
 log() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m!!\033[0m %s\n' "$*" >&2; }
 err() { printf '\033[1;31mxx\033[0m %s\n' "$*" >&2; }
+is_nonblank() {
+  case "$1" in *[![:space:]]*) return 0 ;; *) return 1 ;; esac
+}
 
 # True when we can ask the user something. When this file is piped into a
 # shell, stdin is the script itself, so we read from /dev/tty instead.
@@ -54,6 +57,52 @@ prompt() {
   fi
 }
 
+prompt_yes_no() {
+  # prompt_yes_no <default: Y|N> <message> -> sets REPLY to Y or N
+  _default="$1"
+  _msg="$2"
+  if ! can_prompt; then
+    REPLY="$_default"
+    return 0
+  fi
+  while :; do
+    if [ "$_default" = "Y" ]; then
+      printf '%s [Y/n]: ' "$_msg"
+    else
+      printf '%s [y/N]: ' "$_msg"
+    fi
+    read_line REPLY || REPLY=""
+    REPLY="${REPLY:-$_default}"
+    case "$REPLY" in
+      y|Y|yes|YES|Yes) REPLY="Y"; return 0 ;;
+      n|N|no|NO|No) REPLY="N"; return 0 ;;
+      *) warn "Please answer yes or no." ;;
+    esac
+  done
+}
+
+prompt_required() {
+  # prompt_required <default> <message> -> sets non-empty REPLY
+  _def="$1"
+  _msg="$2"
+  while :; do
+    if can_prompt; then
+      if [ -n "$_def" ]; then
+        printf '%s [%s]: ' "$_msg" "$_def"
+      else
+        printf '%s: ' "$_msg"
+      fi
+      read_line REPLY || REPLY=""
+      REPLY="${REPLY:-$_def}"
+    else
+      REPLY="$_def"
+    fi
+    is_nonblank "$REPLY" && return 0
+    err "$_msg is required when SMTP is enabled."
+    if ! can_prompt; then exit 1; fi
+  done
+}
+
 prompt_secret() {
   # prompt_secret <message>  -> sets REPLY (empty when there is no terminal)
   if ! can_prompt; then
@@ -73,6 +122,23 @@ prompt_secret() {
     stty echo </dev/tty 2>/dev/null || true
   fi
   printf '\n'
+}
+
+prompt_secret_required() {
+  # prompt_secret_required <message> <existing> -> sets non-empty REPLY
+  _msg="$1"
+  _existing="$2"
+  while :; do
+    if [ -n "$_existing" ]; then
+      prompt_secret "$_msg (empty = keep current)"
+      REPLY="${REPLY:-$_existing}"
+    else
+      prompt_secret "$_msg"
+    fi
+    is_nonblank "$REPLY" && return 0
+    err "$_msg is required when SMTP is enabled."
+    if ! can_prompt; then exit 1; fi
+  done
 }
 
 is_yes() {
@@ -117,23 +183,25 @@ has_data() {
 assert_compose_running() {
   # A container that crashes right after "up -d" shows up as "restarting", not
   # running, so wait a bit for the stack to settle before declaring success.
-  _timeout="${CLOVANCE_VERIFY_TIMEOUT:-60}"
+  # The state is "State/Health": a service with a healthcheck reports "running"
+  # while its check has not passed yet, so "running" alone is not enough.
+  _timeout="${CLOVANCE_VERIFY_TIMEOUT:-300}"
   _i=0
   while [ "$_i" -lt "$_timeout" ]; do
-    _states="$(docker compose ps --format '{{.State}}' 2>/dev/null || true)"
-    _running=0
+    _states="$(docker compose ps -a --format '{{.State}}/{{.Health}}' 2>/dev/null || true)"
+    _ready=0
     _broken=0
     for _s in $_states; do
       case "$_s" in
-        running) _running=$((_running + 1)) ;;
+        running/|running/healthy) _ready=$((_ready + 1)) ;;
         *) _broken=$((_broken + 1)) ;;
       esac
     done
-    if [ "$_running" -ge 2 ] && [ "$_broken" -eq 0 ]; then return 0; fi
+    if [ "$_ready" -ge 2 ] && [ "$_broken" -eq 0 ]; then return 0; fi
     _i=$((_i + 1))
     sleep 1
   done
-  err "Clovance did not start correctly ($_running container(s) running, $_broken not running)."
+  err "Clovance did not start correctly ($_ready container(s) ready, $_broken not ready)."
   err "Check 'docker compose ps' and 'docker compose logs' in $INSTALL_DIR."
   exit 1
 }
@@ -159,104 +227,29 @@ ensure_jwt_writable() {
 }
 
 write_compose() {
-  cat > "$(compose_file)" <<'YAML'
-services:
-  env-dashboard:
-    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:13.6"
-    ports:
-      - "${CLOVANCE_DASHBOARD_BIND_ADDRESS:-0.0.0.0}::18888"
-    expose:
-      - "18889"
-      - "18890"
-    networks:
-      - "aspire"
-    restart: "always"
-  clovance-postgres:
-    image: "docker.io/library/postgres:18.3"
-    environment:
-      POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
-      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
-      POSTGRES_USER: "${POSTGRES_USERNAME}"
-      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
-      POSTGRES_DB: "clovance-database"
-    expose:
-      - "5432"
-    volumes:
-      - type: "bind"
-        target: "/var/lib/postgresql"
-        source: "${VOLUME_SOURCE_PATH}/postgres"
-        read_only: false
-    networks:
-      - "aspire"
-    restart: "unless-stopped"
-  clovance-apiservice:
-    image: "${CLOVANCE_APISERVICE_IMAGE}"
-    environment:
-      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
-      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
-      HTTP_PORTS: "${CLOVANCE_APISERVICE_PORT}"
-      ConnectionStrings__clovance-database: "Host=clovance-postgres;Port=5432;Username=${POSTGRES_USERNAME};Password=${POSTGRES_PASSWORD};Database=clovance-database"
-      CLOVANCE_DATABASE_HOST: "clovance-postgres"
-      CLOVANCE_DATABASE_PORT: "5432"
-      CLOVANCE_DATABASE_USERNAME: "${POSTGRES_USERNAME}"
-      CLOVANCE_DATABASE_PASSWORD: "${POSTGRES_PASSWORD}"
-      CLOVANCE_DATABASE_URI: "postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@clovance-postgres:5432/clovance-database"
-      CLOVANCE_DATABASE_JDBCCONNECTIONSTRING: "jdbc:postgresql://clovance-postgres:5432/clovance-database"
-      CLOVANCE_DATABASE_DATABASENAME: "clovance-database"
-      ASPNETCORE_ENVIRONMENT: "Production"
-      Jwt__KeyFilePath: "/home/app/jwt.key"
-      Smtp__Host: "${SMTP_HOST}"
-      Smtp__Port: "${SMTP_PORT}"
-      Smtp__Username: "${SMTP_USERNAME}"
-      Smtp__Password: "${SMTP_PASSWORD}"
-      Smtp__FromAddress: "${SMTP_FROM_ADDRESS}"
-      Smtp__FromName: "${SMTP_FROM_NAME}"
-      Frontend__BaseUrl: "${FRONTEND_BASE_URL}"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://env-dashboard:18889"
-      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
-      OTEL_SERVICE_NAME: "clovance-apiservice"
-    expose:
-      - "${CLOVANCE_APISERVICE_PORT}"
-    volumes:
-      - type: "bind"
-        target: "/home/app"
-        source: "${VOLUME_SOURCE_PATH}/jwt"
-        read_only: false
-    depends_on:
-      clovance-postgres:
-        condition: "service_started"
-    networks:
-      - "aspire"
-    restart: "unless-stopped"
-  clovance-frontend:
-    image: "${CLOVANCE_FRONTEND_IMAGE}"
-    command:
-      - "nginx"
-      - "-g"
-      - "daemon off;"
-    entrypoint:
-      - "/docker-entrypoint.sh"
-    environment:
-      NODE_ENV: "production"
-      CLOVANCE_APISERVICE_HTTP: "http://clovance-apiservice:${CLOVANCE_APISERVICE_PORT}"
-      services__clovance-apiservice__http__0: "http://clovance-apiservice:${CLOVANCE_APISERVICE_PORT}"
-      CLOVANCE_APISERVICE_HTTPS: "https://clovance-apiservice:${CLOVANCE_APISERVICE_PORT}"
-      PORT: "7000"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://env-dashboard:18889"
-      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
-      OTEL_SERVICE_NAME: "clovance-frontend"
-    ports:
-      - "${CLOVANCE_BIND_ADDRESS:-0.0.0.0}:7000:7000"
-    depends_on:
-      clovance-apiservice:
-        condition: "service_started"
-    networks:
-      - "aspire"
-    restart: "unless-stopped"
-networks:
-  aspire:
-    driver: "bridge"
-YAML
+  _target="$(compose_file)"
+  _tmp="${_target}.tmp"
+  _template=""
+
+  # For a local checkout, copy the canonical template next to this installer.
+  # The published one-liner is piped into the shell, so in that case download
+  # the same file from GitHub Pages.
+  case "$0" in
+    */*)
+      _candidate="${0%/*}/docker-compose.yml"
+      if [ -f "$_candidate" ]; then _template="$_candidate"; fi
+      ;;
+  esac
+
+  if [ -n "$_template" ]; then
+    cp "$_template" "$_tmp"
+  elif ! curl -fsSL "$PAGES_BASE/install/docker-compose.yml" -o "$_tmp"; then
+    rm -f "$_tmp"
+    err "Unable to download the canonical Docker Compose file. Check your internet connection and try again."
+    exit 1
+  fi
+
+  mv "$_tmp" "$_target"
 }
 
 do_install() {
@@ -311,18 +304,43 @@ do_install() {
     [ -n "$PG_PASS" ] || { err "Could not generate a PostgreSQL password."; exit 1; }
     log "Generated PostgreSQL password."
   fi
-  prompt "${_existing_smtp_host:-smtp.example.com}" "SMTP host"
-  SMTP_HOST="$REPLY"
-  prompt "${_existing_smtp_port:-587}" "SMTP port"
-  SMTP_PORT="$REPLY"
-  prompt "${_existing_smtp_user:-your_smtp_username}" "SMTP username"
-  SMTP_USER="$REPLY"
-  prompt_secret "SMTP password"
-  SMTP_PASS="${REPLY:-$_existing_smtp_pass}"
-  prompt "${_existing_smtp_from:-your_smtp_from_address@example.com}" "SMTP from address"
-  SMTP_FROM="$REPLY"
-  prompt "${_existing_smtp_name:-Clovance}" "SMTP from name"
-  SMTP_FROM_NAME="$REPLY"
+  _smtp_existing_any=0
+  for _smtp_value in "$_existing_smtp_host" "$_existing_smtp_user" "$_existing_smtp_pass" "$_existing_smtp_from"; do
+    if [ -n "$_smtp_value" ]; then _smtp_existing_any=1; fi
+  done
+  _smtp_existing_complete=0
+  if [ -n "$_existing_smtp_host" ] && [ -n "$_existing_smtp_user" ] \
+      && [ -n "$_existing_smtp_pass" ] && [ -n "$_existing_smtp_from" ]; then
+    _smtp_existing_complete=1
+  elif [ "$_smtp_existing_any" -eq 1 ]; then
+    warn "Existing SMTP settings are incomplete. Choose Yes to complete them or No to disable SMTP."
+  fi
+
+  _smtp_default="N"
+  if [ "$_smtp_existing_complete" -eq 1 ]; then _smtp_default="Y"; fi
+  prompt_yes_no "$_smtp_default" "Configure SMTP? Without it, invitations and password reset emails cannot be sent."
+  if is_yes "$REPLY"; then
+    prompt_required "$_existing_smtp_host" "SMTP host"
+    SMTP_HOST="$REPLY"
+    prompt_required "${_existing_smtp_port:-587}" "SMTP port"
+    SMTP_PORT="$REPLY"
+    prompt_required "$_existing_smtp_user" "SMTP username"
+    SMTP_USER="$REPLY"
+    prompt_secret_required "SMTP password" "$_existing_smtp_pass"
+    SMTP_PASS="$REPLY"
+    prompt_required "$_existing_smtp_from" "SMTP from address"
+    SMTP_FROM="$REPLY"
+    prompt "${_existing_smtp_name:-Clovance}" "SMTP from name"
+    SMTP_FROM_NAME="$REPLY"
+  else
+    SMTP_HOST=""
+    SMTP_USER=""
+    SMTP_PASS=""
+    SMTP_FROM=""
+    SMTP_PORT="${_existing_smtp_port:-587}"
+    SMTP_FROM_NAME="${_existing_smtp_name:-Clovance}"
+    log "SMTP is not configured; invitations and password reset emails cannot be sent."
+  fi
   prompt "${_existing_frontend_url:-http://localhost:${FRONTEND_PORT}}" "Frontend base URL"
   FRONTEND_URL="$REPLY"
 
@@ -436,6 +454,10 @@ do_update() {
       -e "s|^CLOVANCE_FRONTEND_IMAGE=.*|CLOVANCE_FRONTEND_IMAGE=ghcr.io/evaristocuesta/clovance/clovance-frontend:${VERSION}|" \
       "$(env_file)" > "$_tmp"
   mv "$_tmp" "$(env_file)"
+
+  # The compose file is generated by the installer, so refresh it: fixes to the
+  # generated services (healthchecks, ordering) must reach existing installs.
+  write_compose
 
   cd "$INSTALL_DIR"
   if ! docker compose pull; then

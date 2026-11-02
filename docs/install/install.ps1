@@ -15,6 +15,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+$PagesBase           = "https://evaristocuesta.github.io/clovance"
 $DefaultInstallDir  = Join-Path $env:USERPROFILE "clovance"
 $DefaultVersion     = "latest"
 $DefaultFrontendPort = "7000"
@@ -25,6 +26,7 @@ $DefaultDashBind    = "127.0.0.1"
 # True when the script runs as a file (.\install.ps1). False when it was piped
 # into Invoke-Expression (irm ... | iex), where "exit" would close the console.
 $RunningAsFile = [bool]$PSScriptRoot
+$InstallerScriptRoot = $PSScriptRoot
 
 function Log   { param($m) Write-Host "==> $m" -ForegroundColor Cyan }
 function Warn  { param($m) Write-Host "!!  $m" -ForegroundColor Yellow }
@@ -37,6 +39,29 @@ function Read-Value {
     if ([string]::IsNullOrWhiteSpace($val)) { $val = $Default }
   } else { $val = $Default }
   return ([string]$val).Trim()
+}
+
+function Read-YesNo {
+  param([string]$Message, [bool]$Default = $false)
+  if (-not [Environment]::UserInteractive) { return $Default }
+  $choices = if ($Default) { "Y/n" } else { "y/N" }
+  while ($true) {
+    $val = Read-Host "$Message [$choices]"
+    if ([string]::IsNullOrWhiteSpace($val)) { return $Default }
+    if ($val -match '^(?i)y(es)?$') { return $true }
+    if ($val -match '^(?i)n(o)?$') { return $false }
+    Warn "Please answer yes or no."
+  }
+}
+
+function Read-RequiredValue {
+  param([string]$Message, [string]$Default)
+  while ($true) {
+    $value = Read-Value $Message $Default
+    if (-not [string]::IsNullOrWhiteSpace($value)) { return $value }
+    if (-not [Environment]::UserInteractive) { throw "$Message is required when SMTP is enabled." }
+    Warn "$Message is required when SMTP is enabled."
+  }
 }
 
 function Test-Yes {
@@ -53,6 +78,16 @@ function Read-Secret {
   try { $val = [Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
   if ([string]::IsNullOrWhiteSpace($val)) { return $Existing }
   return $val
+}
+
+function Read-RequiredSecret {
+  param([string]$Message, [string]$Existing)
+  while ($true) {
+    $value = Read-Secret $Message $Existing
+    if (-not [string]::IsNullOrWhiteSpace($value)) { return $value }
+    if (-not [Environment]::UserInteractive) { throw "$Message is required when SMTP is enabled." }
+    Warn "$Message is required when SMTP is enabled."
+  }
 }
 
 function GenPassword {
@@ -116,21 +151,23 @@ function Test-HasExistingData {
 }
 
 function Assert-ComposeRunning {
-  param([string]$InstallDir, [int]$Minimum = 2, [int]$TimeoutSeconds = 60)
+  param([string]$InstallDir, [int]$Minimum = 2, [int]$TimeoutSeconds = 300)
   if ($env:CLOVANCE_VERIFY_TIMEOUT) { $TimeoutSeconds = [int]$env:CLOVANCE_VERIFY_TIMEOUT }
   # A container that crashes right after "up -d" shows up as "restarting", not
   # running, so wait a bit for the stack to settle before declaring success.
+  # The state is "State/Health": a service with a healthcheck reports "running"
+  # while its check has not passed yet, so "running" alone is not enough.
   $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
-  $running = 0
+  $ready = 0
   $broken = 0
   do {
-    $states = @(& docker compose ps --format '{{.State}}' 2>$null)
-    $running = @($states | Where-Object { $_ -eq 'running' }).Count
-    $broken = @($states | Where-Object { $_ -and $_ -ne 'running' }).Count
-    if ($running -ge $Minimum -and $broken -eq 0) { return }
+    $states = @(& docker compose ps -a --format '{{.State}}/{{.Health}}' 2>$null)
+    $ready = @($states | Where-Object { $_ -eq 'running/' -or $_ -eq 'running/healthy' }).Count
+    $broken = @($states | Where-Object { $_ -and $_ -ne 'running/' -and $_ -ne 'running/healthy' }).Count
+    if ($ready -ge $Minimum -and $broken -eq 0) { return }
     Start-Sleep -Seconds 1
   } while ((Get-Date) -lt $deadline)
-  throw "Clovance did not start correctly ($running container(s) running, $broken not running). Check 'docker compose ps' and 'docker compose logs' in $InstallDir."
+  throw "Clovance did not start correctly ($ready container(s) ready, $broken not ready). Check 'docker compose ps' and 'docker compose logs' in $InstallDir."
 }
 
 function ToPosixPath($p) {
@@ -144,104 +181,26 @@ function ToPosixPath($p) {
   return $p
 }
 
-$ComposeContent = @'
-services:
-  env-dashboard:
-    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:13.6"
-    ports:
-      - "${CLOVANCE_DASHBOARD_BIND_ADDRESS:-0.0.0.0}::18888"
-    expose:
-      - "18889"
-      - "18890"
-    networks:
-      - "aspire"
-    restart: "always"
-  clovance-postgres:
-    image: "docker.io/library/postgres:18.3"
-    environment:
-      POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
-      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
-      POSTGRES_USER: "${POSTGRES_USERNAME}"
-      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
-      POSTGRES_DB: "clovance-database"
-    expose:
-      - "5432"
-    volumes:
-      - type: "bind"
-        target: "/var/lib/postgresql"
-        source: "${VOLUME_SOURCE_PATH}/postgres"
-        read_only: false
-    networks:
-      - "aspire"
-    restart: "unless-stopped"
-  clovance-apiservice:
-    image: "${CLOVANCE_APISERVICE_IMAGE}"
-    environment:
-      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
-      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
-      HTTP_PORTS: "${CLOVANCE_APISERVICE_PORT}"
-      ConnectionStrings__clovance-database: "Host=clovance-postgres;Port=5432;Username=${POSTGRES_USERNAME};Password=${POSTGRES_PASSWORD};Database=clovance-database"
-      CLOVANCE_DATABASE_HOST: "clovance-postgres"
-      CLOVANCE_DATABASE_PORT: "5432"
-      CLOVANCE_DATABASE_USERNAME: "${POSTGRES_USERNAME}"
-      CLOVANCE_DATABASE_PASSWORD: "${POSTGRES_PASSWORD}"
-      CLOVANCE_DATABASE_URI: "postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@clovance-postgres:5432/clovance-database"
-      CLOVANCE_DATABASE_JDBCCONNECTIONSTRING: "jdbc:postgresql://clovance-postgres:5432/clovance-database"
-      CLOVANCE_DATABASE_DATABASENAME: "clovance-database"
-      ASPNETCORE_ENVIRONMENT: "Production"
-      Jwt__KeyFilePath: "/home/app/jwt.key"
-      Smtp__Host: "${SMTP_HOST}"
-      Smtp__Port: "${SMTP_PORT}"
-      Smtp__Username: "${SMTP_USERNAME}"
-      Smtp__Password: "${SMTP_PASSWORD}"
-      Smtp__FromAddress: "${SMTP_FROM_ADDRESS}"
-      Smtp__FromName: "${SMTP_FROM_NAME}"
-      Frontend__BaseUrl: "${FRONTEND_BASE_URL}"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://env-dashboard:18889"
-      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
-      OTEL_SERVICE_NAME: "clovance-apiservice"
-    expose:
-      - "${CLOVANCE_APISERVICE_PORT}"
-    volumes:
-      - type: "bind"
-        target: "/home/app"
-        source: "${VOLUME_SOURCE_PATH}/jwt"
-        read_only: false
-    depends_on:
-      clovance-postgres:
-        condition: "service_started"
-    networks:
-      - "aspire"
-    restart: "unless-stopped"
-  clovance-frontend:
-    image: "${CLOVANCE_FRONTEND_IMAGE}"
-    command:
-      - "nginx"
-      - "-g"
-      - "daemon off;"
-    entrypoint:
-      - "/docker-entrypoint.sh"
-    environment:
-      NODE_ENV: "production"
-      CLOVANCE_APISERVICE_HTTP: "http://clovance-apiservice:${CLOVANCE_APISERVICE_PORT}"
-      services__clovance-apiservice__http__0: "http://clovance-apiservice:${CLOVANCE_APISERVICE_PORT}"
-      CLOVANCE_APISERVICE_HTTPS: "https://clovance-apiservice:${CLOVANCE_APISERVICE_PORT}"
-      PORT: "7000"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://env-dashboard:18889"
-      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
-      OTEL_SERVICE_NAME: "clovance-frontend"
-    ports:
-      - "${CLOVANCE_BIND_ADDRESS:-0.0.0.0}:7000:7000"
-    depends_on:
-      clovance-apiservice:
-        condition: "service_started"
-    networks:
-      - "aspire"
-    restart: "unless-stopped"
-networks:
-  aspire:
-    driver: "bridge"
-'@
+function Write-Compose {
+  param([string]$InstallDir)
+
+  $composePath = Join-Path $InstallDir "docker-compose.yml"
+  $temporaryPath = "$composePath.tmp"
+  $localTemplate = if ($InstallerScriptRoot) { Join-Path $InstallerScriptRoot "docker-compose.yml" } else { $null }
+
+  try {
+    if ($localTemplate -and (Test-Path $localTemplate)) {
+      Copy-Item -Path $localTemplate -Destination $temporaryPath -Force
+    } else {
+      # For the published irm | iex installer, PSScriptRoot is empty. Fetch the
+      # canonical template from the same GitHub Pages deployment as this script.
+      Invoke-WebRequest -Uri "$PagesBase/install/docker-compose.yml" -OutFile $temporaryPath
+    }
+    Move-Item -Path $temporaryPath -Destination $composePath -Force
+  } finally {
+    if (Test-Path $temporaryPath) { Remove-Item $temporaryPath -Force }
+  }
+}
 
 function Do-Install {
   Check-Docker
@@ -280,12 +239,30 @@ function Do-Install {
   $pgUser     = Read-Value "PostgreSQL username" (Get-OrDefault $existingPgUser "clovance")
   $pgPass     = Read-Secret "PostgreSQL password" $existingPgPass
   if ([string]::IsNullOrWhiteSpace($pgPass)) { $pgPass = GenPassword; Log "Generated PostgreSQL password." }
-  $smtpHost   = Read-Value "SMTP host" (Get-OrDefault $existingSmtpHost "smtp.example.com")
-  $smtpPort   = Read-Value "SMTP port" (Get-OrDefault $existingSmtpPort "587")
-  $smtpUser   = Read-Value "SMTP username" (Get-OrDefault $existingSmtpUser "your_smtp_username")
-  $smtpPass   = Read-Secret "SMTP password" $existingSmtpPass
-  $smtpFrom   = Read-Value "SMTP from address" (Get-OrDefault $existingSmtpFrom "your_smtp_from_address@example.com")
-  $smtpName   = Read-Value "SMTP from name" (Get-OrDefault $existingSmtpName "Clovance")
+  $smtpValues = @($existingSmtpHost, $existingSmtpUser, $existingSmtpPass, $existingSmtpFrom)
+  $smtpExistingAny = @($smtpValues | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }).Count -gt 0
+  $smtpMissingValues = @($smtpValues | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count
+  $smtpExistingComplete = $smtpExistingAny -and ($smtpMissingValues -eq 0)
+  if ($smtpExistingAny -and -not $smtpExistingComplete) {
+    Warn "Existing SMTP settings are incomplete. Choose Yes to complete them or No to disable SMTP."
+  }
+  $smtpEnabled = Read-YesNo "Configure SMTP to send invitations and password reset emails? (Without SMTP, those emails cannot be sent.)" $smtpExistingComplete
+  if ($smtpEnabled) {
+    $smtpHost = Read-RequiredValue "SMTP host" $existingSmtpHost
+    $smtpPort = Read-RequiredValue "SMTP port" (Get-OrDefault $existingSmtpPort "587")
+    $smtpUser = Read-RequiredValue "SMTP username" $existingSmtpUser
+    $smtpPass = Read-RequiredSecret "SMTP password" $existingSmtpPass
+    $smtpFrom = Read-RequiredValue "SMTP from address" $existingSmtpFrom
+    $smtpName = Read-Value "SMTP from name" (Get-OrDefault $existingSmtpName "Clovance")
+  } else {
+    $smtpHost = ""
+    $smtpUser = ""
+    $smtpPass = ""
+    $smtpFrom = ""
+    $smtpPort = Get-OrDefault $existingSmtpPort "587"
+    $smtpName = Get-OrDefault $existingSmtpName "Clovance"
+    Log "SMTP is not configured; invitations and password reset emails cannot be sent."
+  }
   $feUrl      = Read-Value "Frontend base URL" (Get-OrDefault $existingFeUrl "http://localhost:$fePort")
 
   New-Item -ItemType Directory -Force -Path $installDir | Out-Null
@@ -314,7 +291,7 @@ CLOVANCE_BIND_ADDRESS=$bind
 CLOVANCE_DASHBOARD_BIND_ADDRESS=$dashBind
 "@
   Set-Content -Path $envPath -Value $envContent -NoNewline
-  Set-Content -Path (Join-Path $installDir "docker-compose.yml") -Value $ComposeContent -NoNewline
+  Write-Compose -InstallDir $installDir
 
   Log "Configuration written to $installDir"
 
@@ -386,6 +363,9 @@ function Do-Update {
     else { $_ }
   }
   Set-Content -Path $envPath -Value ($lines -join "`r`n") -NoNewline
+  # The compose file is generated by the installer, so refresh it: fixes to the
+  # generated services (healthchecks, ordering) must reach existing installs.
+  Write-Compose -InstallDir $installDir
   Push-Location $installDir
   try {
     Log "Pulling new images..."

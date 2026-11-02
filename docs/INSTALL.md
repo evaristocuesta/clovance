@@ -48,17 +48,16 @@ During installation you will be prompted for the following values (defaults show
 | Bind address (dashboard) | `127.0.0.1` | Interface the Aspire dashboard binds to. |
 | PostgreSQL username | `clovance` | Database user. |
 | PostgreSQL password | *(auto-generated)* | Leave empty to generate a random password. |
-| SMTP host | `smtp.example.com` | Mail server used for invitations and password resets. |
-| SMTP port | `587` | Mail server port. |
-| SMTP username | `your_smtp_username` | Mail server username. |
-| SMTP password | *(empty)* | Mail server password. |
-| SMTP from address | `your_smtp_from_address@example.com` | Sender address. |
-| SMTP from name | `Clovance` | Sender display name. |
+| Configure SMTP | `No` (existing complete configuration defaults to `Yes`) | Optional. If disabled, Clovance starts without email delivery. |
+| SMTP host, port, username, password, and from address | Required only when SMTP is enabled; port defaults to `587` | SMTP is used to send invitations and password-reset emails. |
+| SMTP from name | `Clovance` | Optional sender display name. |
 | Frontend base URL | `http://localhost:7000` | Public URL of the frontend (used by the API). |
+
+If you choose **No**, the installer leaves the SMTP host, username, password, and from address empty. Clovance will start, but it cannot send invitations or password-reset emails. You can enable SMTP later by filling in those four values in `.env` and recreating the API container. If you choose **Yes**, the installer requires the SMTP settings, including a password.
 
 Data is stored under `<install-dir>/data` (Postgres data and the JWT key).
 
-Re-running the installer over an existing installation is safe: the values in `.env` are used as prompt defaults and the current PostgreSQL password is kept (the `POSTGRES_PASSWORD` value is only used when the database is created).
+Re-running the installer over an existing installation uses the values in `.env` as prompt defaults and keeps the current PostgreSQL password (`POSTGRES_PASSWORD` is only used when the database is created). A complete SMTP configuration defaults to enabled; an incomplete one is reported and defaults to disabled unless you choose to complete it.
 
 ## 🔄 Update
 
@@ -148,7 +147,7 @@ On Linux/macOS, if the data directory was created by the container (root-owned),
 - **Permission denied on data removal (Linux)**: use `sudo rm -rf <install-dir>/data`.
 - **Port already in use**: choose a different frontend port during install, or stop the conflicting service.
 - **The API restarts in a loop (Linux / WSL)**: `docker compose logs clovance-apiservice` shows `Access to the path '/home/app/jwt.key' is denied`. The API image runs as the unprivileged `app` user (uid 1654) and the `data/jwt` bind mount keeps the host ownership, so the container cannot write its signing key. The installer now fixes this when it creates the directory; for an existing install run `chmod 0777 <install-dir>/data/jwt` (or `sudo chown -R 1654:1654 <install-dir>/data/jwt`) and `docker compose up -d`. Docker Desktop on Windows/macOS is not affected because it does not enforce ownership on bind mounts.
-- **"Clovance did not start correctly"**: at least one container is not running. The installer waits up to 60 seconds for the stack to settle, so a container stuck in `restarting` fails the install instead of reporting success. Check `docker compose ps` and `docker compose logs` in the install directory.
+- **"Clovance did not start correctly"**: at least one container never became ready. The installer waits for every service to be `healthy` (up to 5 minutes, tunable with `CLOVANCE_VERIFY_TIMEOUT`), so a container stuck in `restarting` or `unhealthy` fails the install instead of reporting success. Check `docker compose ps` and `docker compose logs` in the install directory.
 
 ## 📚 Related documentation
 
