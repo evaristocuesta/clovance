@@ -4,7 +4,7 @@ This document shows how to use the Docker images published to GitHub Container R
 
 ## 🐳 Docker Compose
 
-Create a `.env` file by filling in the api service image, api service port, frontend image, postgres username and password and SMTP email configuration. SMTP email configuration will be use to send invitations to other users to create an account or to reset your password account. 
+Create a `.env` file. SMTP is optional: leave its host, username, password, and from-address values empty to run without email. In that case, Clovance cannot send invitations or password-reset emails. If you configure SMTP, provide all four values, including the password.
 
 ```
 # Container image name for clovance-apiservice
@@ -25,128 +25,45 @@ POSTGRES_PASSWORD=your_postgres_password
 # Parameter postgres-username
 POSTGRES_USERNAME=your_postgres_username
 
-# Parameter smtp-from-address
-SMTP_FROM_ADDRESS=your_smtp_from_address@example.com
+# Optional SMTP settings. Leave the host, username, password, and from address
+# empty to disable email. If enabled, fill in all four values.
+SMTP_FROM_ADDRESS=
 
 # Parameter smtp-from-name
 SMTP_FROM_NAME=Clovance
 
 # Parameter smtp-host
-SMTP_HOST=smtp.example.com
+SMTP_HOST=
 
 # Parameter smtp-password
-SMTP_PASSWORD=your_smtp_password
+SMTP_PASSWORD=
 
 # Parameter smtp-port
 SMTP_PORT=587
 
 # Parameter smtp-username
-SMTP_USERNAME=your_smtp_username
+SMTP_USERNAME=
 
 # Parameter volume-source-path
 VOLUME_SOURCE_PATH=/home/docker/clovance
 ```
 
-Create a `docker-compose.yml` file to run the complete application:
+Use the canonical Compose file, which is also used by both installers:
 
-```yaml
-services:
-  env-dashboard:
-    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:13.6"
-    ports:
-      - "${CLOVANCE_DASHBOARD_BIND_ADDRESS:-0.0.0.0}::18888"
-    expose:
-      - "18889"
-      - "18890"
-    networks:
-      - "aspire"
-    restart: "always"
-  clovance-postgres:
-    image: "docker.io/library/postgres:18.3"
-    environment:
-      POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
-      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
-      POSTGRES_USER: "${POSTGRES_USERNAME}"
-      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
-      POSTGRES_DB: "clovance-database"
-    expose:
-      - "5432"
-    volumes:
-      - type: "bind"
-        target: "/var/lib/postgresql"
-        source: "${VOLUME_SOURCE_PATH}/postgres"
-        read_only: false
-    networks:
-      - "aspire"
-    restart: "unless-stopped"
-  clovance-apiservice:
-    image: "${CLOVANCE_APISERVICE_IMAGE}"
-    environment:
-      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
-      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
-      HTTP_PORTS: "${CLOVANCE_APISERVICE_PORT}"
-      ConnectionStrings__clovance-database: "Host=clovance-postgres;Port=5432;Username=${POSTGRES_USERNAME};Password=${POSTGRES_PASSWORD};Database=clovance-database"
-      CLOVANCE_DATABASE_HOST: "clovance-postgres"
-      CLOVANCE_DATABASE_PORT: "5432"
-      CLOVANCE_DATABASE_USERNAME: "${POSTGRES_USERNAME}"
-      CLOVANCE_DATABASE_PASSWORD: "${POSTGRES_PASSWORD}"
-      CLOVANCE_DATABASE_URI: "postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@clovance-postgres:5432/clovance-database"
-      CLOVANCE_DATABASE_JDBCCONNECTIONSTRING: "jdbc:postgresql://clovance-postgres:5432/clovance-database"
-      CLOVANCE_DATABASE_DATABASENAME: "clovance-database"
-      ASPNETCORE_ENVIRONMENT: "Production"
-      Jwt__KeyFilePath: "/home/app/jwt.key"
-      Smtp__Host: "${SMTP_HOST}"
-      Smtp__Port: "${SMTP_PORT}"
-      Smtp__Username: "${SMTP_USERNAME}"
-      Smtp__Password: "${SMTP_PASSWORD}"
-      Smtp__FromAddress: "${SMTP_FROM_ADDRESS}"
-      Smtp__FromName: "${SMTP_FROM_NAME}"
-      Frontend__BaseUrl: "${FRONTEND_BASE_URL}"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://env-dashboard:18889"
-      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
-      OTEL_SERVICE_NAME: "clovance-apiservice"
-    expose:
-      - "${CLOVANCE_APISERVICE_PORT}"
-    volumes:
-      - type: "bind"
-        target: "/home/app"
-        source: "${VOLUME_SOURCE_PATH}/jwt"
-        read_only: false
-    depends_on:
-      clovance-postgres:
-        condition: "service_started"
-    networks:
-      - "aspire"
-    restart: "unless-stopped"
-  clovance-frontend:
-    image: "${CLOVANCE_FRONTEND_IMAGE}"
-    command:
-      - "nginx"
-      - "-g"
-      - "daemon off;"
-    entrypoint:
-      - "/docker-entrypoint.sh"
-    environment:
-      NODE_ENV: "production"
-      CLOVANCE_APISERVICE_HTTP: "http://clovance-apiservice:${CLOVANCE_APISERVICE_PORT}"
-      services__clovance-apiservice__http__0: "http://clovance-apiservice:${CLOVANCE_APISERVICE_PORT}"
-      CLOVANCE_APISERVICE_HTTPS: "https://clovance-apiservice:${CLOVANCE_APISERVICE_PORT}"
-      PORT: "7000"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://env-dashboard:18889"
-      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
-      OTEL_SERVICE_NAME: "clovance-frontend"
-    ports:
-      - "${CLOVANCE_BIND_ADDRESS:-0.0.0.0}:7000:7000"
-    depends_on:
-      clovance-apiservice:
-        condition: "service_started"
-    networks:
-      - "aspire"
-    restart: "unless-stopped"
-networks:
-  aspire:
-    driver: "bridge"
-```
+- [Download `docker-compose.yml`](https://evaristocuesta.github.io/clovance/install/docker-compose.yml)
+- Or download it from a terminal:
+
+  ```bash
+  curl -fsSLo docker-compose.yml https://evaristocuesta.github.io/clovance/install/docker-compose.yml
+  ```
+
+  In PowerShell:
+
+  ```powershell
+  Invoke-WebRequest https://evaristocuesta.github.io/clovance/install/docker-compose.yml -OutFile docker-compose.yml
+  ```
+
+Keep the `.env` file in the same directory as `docker-compose.yml`.
 
 Start the application:
 

@@ -1,0 +1,113 @@
+# Canonical Compose template used by the installer and manual deployment docs.
+services:
+  env-dashboard:
+    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:13.6"
+    ports:
+      - "${CLOVANCE_DASHBOARD_BIND_ADDRESS:-0.0.0.0}::18888"
+    expose:
+      - "18889"
+      - "18890"
+    networks:
+      - "aspire"
+    restart: "always"
+  clovance-postgres:
+    image: "docker.io/library/postgres:18.3"
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+      POSTGRES_USER: "${POSTGRES_USERNAME}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "clovance-database"
+    expose:
+      - "5432"
+    volumes:
+      - type: "bind"
+        target: "/var/lib/postgresql"
+        source: "${VOLUME_SOURCE_PATH}/postgres"
+        read_only: false
+    healthcheck:
+      # Use TCP: the Unix socket may answer before Postgres accepts TCP clients.
+      # A fresh initdb on a Docker Desktop bind mount can take around 80 seconds.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 90s
+    networks:
+      - "aspire"
+    restart: "unless-stopped"
+  clovance-apiservice:
+    image: "${CLOVANCE_APISERVICE_IMAGE}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${CLOVANCE_APISERVICE_PORT}"
+      ConnectionStrings__clovance-database: "Host=clovance-postgres;Port=5432;Username=${POSTGRES_USERNAME};Password=${POSTGRES_PASSWORD};Database=clovance-database"
+      CLOVANCE_DATABASE_HOST: "clovance-postgres"
+      CLOVANCE_DATABASE_PORT: "5432"
+      CLOVANCE_DATABASE_USERNAME: "${POSTGRES_USERNAME}"
+      CLOVANCE_DATABASE_PASSWORD: "${POSTGRES_PASSWORD}"
+      CLOVANCE_DATABASE_URI: "postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@clovance-postgres:5432/clovance-database"
+      CLOVANCE_DATABASE_JDBCCONNECTIONSTRING: "jdbc:postgresql://clovance-postgres:5432/clovance-database"
+      CLOVANCE_DATABASE_DATABASENAME: "clovance-database"
+      ASPNETCORE_ENVIRONMENT: "Production"
+      Jwt__KeyFilePath: "/home/app/jwt.key"
+      Smtp__Host: "${SMTP_HOST}"
+      Smtp__Port: "${SMTP_PORT}"
+      Smtp__Username: "${SMTP_USERNAME}"
+      Smtp__Password: "${SMTP_PASSWORD}"
+      Smtp__FromAddress: "${SMTP_FROM_ADDRESS}"
+      Smtp__FromName: "${SMTP_FROM_NAME}"
+      Frontend__BaseUrl: "${FRONTEND_BASE_URL}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://env-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "clovance-apiservice"
+    expose:
+      - "${CLOVANCE_APISERVICE_PORT}"
+    volumes:
+      - type: "bind"
+        target: "/home/app"
+        source: "${VOLUME_SOURCE_PATH}/jwt"
+        read_only: false
+    healthcheck:
+      # The image has bash but no curl/wget. Program.cs completes migrations
+      # before Kestrel listens, so an open port also confirms schema readiness.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/${CLOVANCE_APISERVICE_PORT}"]
+      interval: 5s
+      timeout: 5s
+      retries: 36
+      start_period: 60s
+    depends_on:
+      clovance-postgres:
+        condition: "service_healthy"
+    networks:
+      - "aspire"
+    restart: "unless-stopped"
+  clovance-frontend:
+    image: "${CLOVANCE_FRONTEND_IMAGE}"
+    command:
+      - "nginx"
+      - "-g"
+      - "daemon off;"
+    entrypoint:
+      - "/docker-entrypoint.sh"
+    environment:
+      NODE_ENV: "production"
+      CLOVANCE_APISERVICE_HTTP: "http://clovance-apiservice:${CLOVANCE_APISERVICE_PORT}"
+      services__clovance-apiservice__http__0: "http://clovance-apiservice:${CLOVANCE_APISERVICE_PORT}"
+      CLOVANCE_APISERVICE_HTTPS: "https://clovance-apiservice:${CLOVANCE_APISERVICE_PORT}"
+      PORT: "7000"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://env-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "clovance-frontend"
+    ports:
+      - "${CLOVANCE_BIND_ADDRESS:-0.0.0.0}:7000:7000"
+    depends_on:
+      clovance-apiservice:
+        condition: "service_healthy"
+    networks:
+      - "aspire"
+    restart: "unless-stopped"
+networks:
+  aspire:
+    driver: "bridge"
