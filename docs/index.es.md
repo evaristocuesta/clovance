@@ -67,7 +67,7 @@ Apache License 2.0. Ver [LICENSE](https://github.com/evaristocuesta/clovance/blo
 
 ---
 
-<details>
+<details markdown="1">
 <summary><strong>🛠️ Para desarrolladores</strong></summary>
 
 Stack: .NET 10, .NET Aspire, Angular 22, PostgreSQL, Tailwind/Flowbite.
@@ -94,4 +94,3 @@ Imágenes Docker: `ghcr.io/evaristocuesta/clovance/clovance-api` y `.../clovance
 Más: [Docker Publishing](./DOCKER_PUBLISH.md) · [Versioning](./VERSIONING_EXAMPLES.md).
 
 </details>
-"
