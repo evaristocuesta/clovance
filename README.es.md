@@ -134,4 +134,3 @@ Crea un tag y dispara el workflow de GitHub Actions que publica las imágenes Do
 Más detalles: [Docker Publishing](docs/DOCKER_PUBLISH.md) · [Versioning](docs/VERSIONING_EXAMPLES.md)
 
 </details>
-"

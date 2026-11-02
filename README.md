@@ -134,4 +134,3 @@ Creates a tag and triggers the GitHub Actions workflow that publishes Docker ima
 More details: [Docker Publishing](docs/DOCKER_PUBLISH.md) · [Versioning](docs/VERSIONING_EXAMPLES.md)
 
 </details>
-"
