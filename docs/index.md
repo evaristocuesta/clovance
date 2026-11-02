@@ -1,132 +1,97 @@
 # Clovance
 
-Clovance is a personal finance management application built with .NET Aspire, Angular, and PostgreSQL. It helps you keep track of your daily finances and maintain a clear history of your financial transactions. Track multiple accounts, record expenses and income, register transfers between accounts, manage loans, and review statistics to better understand your spending patterns and cash flow over time. The interface is available in English and Spanish.
+**Your personal finances, on your own server.** Open source, self-hosted, installable with a single command.
+
+Clovance helps you stay in control of your money without giving up your privacy: record expenses and income, manage multiple accounts, transfer between them, track loans, and analyze your spending patterns. **Your data stays on your server**, not in someone else's cloud, and **there's no monthly subscription**.
+
+📖 [Leer en español](./index.es.md)
 
 ![Clovance](./images/clovance-screenshot-01.jpg)
 
-![Clovance](./images/clovance-screenshot-02.jpg)
+## ✨ What can you do with Clovance?
 
+- 📊 **A complete view of your finances**: balance per account, movements, and spending/income statistics.
+- 💸 **Record expenses and income** with a clear history.
+- 🏦 **Manage multiple accounts** (cash, banks, cards, savings) in one place.
+- 🔁 **Transfers between accounts** without duplicating movements.
+- 💳 **Track loans** and their evolution.
+- 📈 **Statistics and cash flow** to understand where your money goes.
+- 🌍 **Interface in English and Spanish.**
+- 🔒 **Secure authentication** and data under your control.
+
+![Clovance](./images/clovance-screenshot-02.jpg)
 ![Clovance](./images/clovance-screenshot-03.jpg)
 
-## What Clovance does
+## 🔒 Privacy & self-hosting
 
-- Track multiple financial accounts in one place.
-- Record expenses and income with a clear history of movements.
-- Register transfers between accounts.
-- Organize personal finances and review statistics to understand spending patterns and cash flow over time.
-- Multi-language UI (English and Spanish).
-- Secure authentication with JWT.
+- Your financial data **never leaves your environment**.
+- **No third-party account**, no telemetry, no ads.
+- **No subscription**: once installed, it's yours.
+- Open source (Apache 2.0): audit it, modify it, contribute to it.
 
-## 🚀 Quick Start
+## 🚀 Install with one command
 
-### Easy install (recommended)
-
-Install Clovance on Windows, Linux, or macOS with a single command. The installer checks Docker, asks a few questions, generates the configuration, pulls the images, and starts the app.
+You only need Docker.
 
 **Linux / macOS:**
-
 ```bash
 curl -fsSL https://evaristocuesta.github.io/clovance/install/install.sh | sh
 ```
 
 **Windows (PowerShell):**
-
 ```powershell
 irm https://evaristocuesta.github.io/clovance/install/install.ps1 | iex
 ```
 
-The scripts also support `uninstall` and `update` subcommands. See the [Installation Guide](./INSTALL.md) for all parameters and options. For manual setup, see the [Docker Usage Guide](./DOCKER_USAGE.md).
+The scripts also support `uninstall` and `update`. Full guide: [Installation Guide](./INSTALL.md). Manual setup: [Docker Usage Guide](./DOCKER_USAGE.md).
 
-### Docker Compose (manual)
+## ❓ FAQ
 
-You can also run Clovance with Docker Compose. For the complete setup, see the [Docker Usage Guide](./DOCKER_USAGE.md).
+**Do I need to know how to code?** No. Just install Docker and run the command.
 
-### Local Development
+**Can I use it without email?** Yes. Email is optional; without SMTP, invitations and password resets aren't sent, but the app works.
 
+**Where is my data stored?** In a PostgreSQL database running on your own server/container.
+
+**How do I back up?** Back up the PostgreSQL data volume (see [Docker Usage Guide](./DOCKER_USAGE.md)).
+
+**Is it free?** Yes, open source under Apache 2.0. No license fees.
+
+## 🤝 Community
+
+Want to help? Read the [Contributing Guide](https://github.com/evaristocuesta/clovance/blob/main/CONTRIBUTING.md). Ideas, bugs, and improvements in the [Issues](https://github.com/evaristocuesta/clovance/issues).
+
+## 📄 License
+
+Apache License 2.0. See [LICENSE](https://github.com/evaristocuesta/clovance/blob/main/LICENSE.md).
+
+---
+
+<details>
+<summary><strong>🛠️ For developers</strong></summary>
+
+Stack: .NET 10, .NET Aspire, Angular 22, PostgreSQL, Tailwind/Flowbite.
+
+Local development:
 ```bash
-# From the repository root
 cd api/aspire/Clovance.AppHost
 dotnet run
 ```
 
-This will start:
-
-- API Service
-- Frontend
-- PostgreSQL with pgWeb
-- Aspire Dashboard
-
-### Publish a New Version
-
-```powershell
-# Production release
-.\scripts\publish-version.ps1 -Version "1.0.0"
-
-# Pre-release (beta, rc, alpha)
-.\scripts\publish-version.ps1 -Version "1.0.0-beta1"
+Frontend build:
+```bash
+cd frontend
+pnpm install --frozen-lockfile
+pnpm build
 ```
 
-This creates a Git tag and triggers the GitHub Actions workflow, which publishes the Docker images to GitHub Container Registry.
+Tests: unit (`api/tests/Clovance.UnitTests`), integration with Docker (`api/tests/Clovance.IntegrationTests`), frontend (`pnpm test`).
 
-## 📚 Documentation
+Publish a version: `.\scripts\publish-version.ps1 -Version "1.0.0"`.
 
-- [Installation Guide](./INSTALL.md) - One-command installers for Windows, Linux, and macOS
-- [Docker Usage Guide](./DOCKER_USAGE.md) - Setup, ports, reverse proxy, and operations
-- [Docker Image Publishing](./DOCKER_PUBLISH.md) - Publishing and deployment guide
-- [Versioning Examples](./VERSIONING_EXAMPLES.md) - Semver tagging reference
+Docker images: `ghcr.io/evaristocuesta/clovance/clovance-api` and `.../clovance-frontend`.
 
-## 🏗️ Project Structure
+More: [Docker Publishing](./DOCKER_PUBLISH.md) · [Versioning](./VERSIONING_EXAMPLES.md).
 
-```
-Clovance/
-├── api/                          # .NET backend
-│   ├── aspire/                   # Aspire configuration
-│   │   ├── Clovance.AppHost/     # Application orchestration
-│   │   └── Clovance.ServiceDefaults/
-│   ├── src/
-│   │   └── Clovance.ApiService/  # REST API
-│   └── tests/
-│       ├── Clovance.UnitTests/
-│       └── Clovance.IntegrationTests/
-├── frontend/                     # Angular frontend
-├── scripts/                      # Utility scripts
-└── docs/                         # Documentation
-```
-
-## 🛠️ Technologies
-
-**Backend:**
-
-- .NET 10
-- .NET Aspire
-- PostgreSQL
-- Entity Framework Core
-- JWT Authentication
-
-**Frontend:**
-
-- Angular 22
-- TypeScript
-- Tailwind CSS
-- Flowbite UI
-
-**DevOps:**
-
-- Docker
-- GitHub Actions
-- GitHub Container Registry (GHCR)
-
-## 📦 Docker Images
-
-Docker images are automatically published to:
-
-- [ghcr.io/evaristocuesta/clovance/clovance-api](https://ghcr.io/evaristocuesta/clovance/clovance-api)
-- [ghcr.io/evaristocuesta/clovance/clovance-frontend](https://ghcr.io/evaristocuesta/clovance/clovance-frontend)
-
-## 🤝 Contributing
-
-For contributions, see the [Contributing Guide](https://github.com/evaristocuesta/clovance/blob/main/CONTRIBUTING.md).
-
-## 📄 License
-
-This project is licensed under the Apache License 2.0. See the [LICENSE](https://github.com/evaristocuesta/clovance/blob/main/LICENSE.md) file for details.
+</details>
+"
