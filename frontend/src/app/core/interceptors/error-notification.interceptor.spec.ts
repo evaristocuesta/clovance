@@ -6,13 +6,8 @@ import {
   HttpResponse,
 } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import {
-  Translation,
-  TranslocoLoader,
-  TranslocoService,
-  provideTransloco,
-} from '@jsverse/transloco';
-import { Observable, firstValueFrom, of, throwError } from 'rxjs';
+import { Translation, TranslocoLoader, provideTransloco } from '@jsverse/transloco';
+import { Observable, of, throwError } from 'rxjs';
 import { ToastService } from '@shared/ui/toast/toast.service';
 
 import { errorNotificationInterceptor } from './error-notification.interceptor';
@@ -32,7 +27,7 @@ describe('errorNotificationInterceptor', () => {
 
   let toastService: ToastService;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
         provideTransloco({
@@ -48,7 +43,6 @@ describe('errorNotificationInterceptor', () => {
     });
 
     toastService = TestBed.inject(ToastService);
-    await firstValueFrom(TestBed.inject(TranslocoService).load('en'));
   });
 
   it('shows a toast translated from the backend error code', () => {

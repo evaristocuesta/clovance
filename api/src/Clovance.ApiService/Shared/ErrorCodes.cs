@@ -6,11 +6,8 @@ public static class ErrorCodes
     {
         public const string ValidationFailed = "common.validation_failed";
         public const string UnexpectedError = "common.unexpected_error";
-        public const string Conflict = "common.conflict";
-        public const string NotFound = "common.not_found";
         public const string Forbidden = "common.forbidden";
         public const string Unauthorized = "common.unauthorized";
-        public const string BadRequest = "common.bad_request";
         public const string TooManyRequests = "common.too_many_requests";
         public const string StaleData = "common.stale_data";
     }
@@ -37,9 +34,6 @@ public static class ErrorCodes
         public const string ActiveInvitationAlreadyExists = "auth.invitation.active_already_exists";
 
         public const string PasswordChangeFailed = "auth.password.change_failed";
-        public const string EmailAlreadyInUse = "auth.email.already_in_use";
-        public const string EmailChangeFailed = "auth.email.change_failed";
-        public const string UsernameChangeFailed = "auth.username.change_failed";
 
         public const string CurrentPasswordRequired = "auth.current_password.required";
         public const string NewPasswordRequired = "auth.new_password.required";
@@ -74,17 +68,12 @@ public static class ErrorCodes
 
     public static class Accounts
     {
-        public const string AccountRequired = "accounts.account.required";
         public const string AccountIdRequired = "accounts.account.id_required";
         public const string AccountNotFound = "accounts.account.not_found";
-        public const string AccountCreationFailed = "accounts.account.creation_failed";
-        public const string AccountUpdateFailed = "accounts.account.update_failed";
-        public const string AccountDeletionFailed = "accounts.account.deletion_failed";
         public const string AccountNameRequired = "accounts.account.name.required";
         public const string AccountNameMaxLength = "accounts.account.name.max_length";
         public const string AccountCurrencyInvalid = "accounts.account.currency.invalid";
         public const string AccountTypeInvalid = "accounts.accountTypeInvalid";
-        public const string AccountOpeningBalanceRequired = "accounts.account.opening_balance.required";
         public const string AccountOpeningDateRequired = "accounts.account.opening_date.required";
         public const string AccountOpeningDescriptionRequired = "accounts.account.opening_description.required";
     }
@@ -98,9 +87,7 @@ public static class ErrorCodes
         public const string AmountRequired = "transactions.transaction.amount.required";
         public const string AmountInvalid = "transactions.transaction.amount.invalid";
         public const string PrincipalAmountRequired = "transactions.transaction.principal_amount.required";
-        public const string PrincipalAmountInvalid = "transactions.transaction.principal_amount.invalid";
         public const string DateRequired = "transactions.transaction.date.required";
-        public const string FilterRequired = "transactions.filter.required";
         public const string MonthInvalidRange = "transactions.month.invalid_range";
         public const string DateFromDateToMustComeTogether = "transactions.date_from_date_to.must_come_together";
         public const string PageSizeInvalidRange = "transactions.page_size.invalid_range";
