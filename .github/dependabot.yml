@@ -4,3 +4,27 @@ updates:
     directory: /
     schedule:
       interval: weekly
+
+  # API: NuGet packages (Central Package Management lives in api/Directory.Packages.props).
+  - package-ecosystem: nuget
+    directory: /api
+    schedule:
+      interval: weekly
+
+  # Frontend: npm dependencies managed by pnpm.
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+
+  # Base images of both published Docker images (floating tags such as
+  # mcr.microsoft.com/dotnet/aspnet:10.0 and nginxinc/nginx-unprivileged:alpine).
+  - package-ecosystem: docker
+    directory: /frontend
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: docker
+    directory: /api/src/Clovance.ApiService
+    schedule:
+      interval: weekly
