@@ -69,6 +69,40 @@ jobs:
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
 
+      # Runs after push because buildx publishes a multi-arch image that cannot be
+      # loaded into the local daemon. A red run still means "do not promote this tag".
+      - name: Scan image with Trivy
+        env:
+          TRIVY_CACHE: ${{ runner.temp }}/trivy-cache
+        run: |
+          set -euo pipefail
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.image_name }}@${{ steps.build.outputs.digest }}"
+          TRIVY="docker run --rm -v ${TRIVY_CACHE}:/root/.cache -v $HOME/.docker/config.json:/root/.docker/config.json:ro aquasec/trivy:latest image --scanners vuln --ignore-unfixed"
+          echo "::group::Vulnerability report (fixable HIGH/CRITICAL)"
+          ${TRIVY} --severity HIGH,CRITICAL "${IMAGE}"
+          echo "::endgroup::"
+          echo "::group::Release gate (fixable CRITICAL)"
+          ${TRIVY} --severity CRITICAL --exit-code 1 "${IMAGE}"
+          echo "::endgroup::"
+
+      # Trivy cannot see the eMudhra incident (CVE-2026-111943): the fix is a CA
+      # bundle change with no Alpine/Ubuntu package CVE, so it needs its own check.
+      - name: Verify CA bundle distrusts compromised eMudhra roots
+        run: |
+          set -euo pipefail
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.image_name }}@${{ steps.build.outputs.digest }}"
+          docker pull -q "${IMAGE}"
+          if docker create --name ca-check "${IMAGE}" >/dev/null \
+            && docker cp ca-check:/etc/ssl/certs/ca-certificates.crt ./ca-bundle.crt 2>/dev/null; then
+            docker rm -f ca-check >/dev/null
+            docker run --rm -v "${PWD}:/w" alpine:3 sh /w/scripts/check-ca-bundle.sh /w/ca-bundle.crt
+          else
+            docker rm -f ca-check >/dev/null 2>&1 || true
+            echo "::error::Could not extract the CA bundle; cannot verify compromised eMudhra roots"
+            exit 1
+          fi
+          rm -f ./ca-bundle.crt
+
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
         with:
