@@ -86,17 +86,8 @@ public static class AppErrors
         public static Error ActiveInvitationAlreadyExists() =>
             CreateConflict(ErrorCodes.Auth.ActiveInvitationAlreadyExists, "There is already an active invitation for this email.");
 
-        public static Error EmailAlreadyInUse() =>
-            CreateConflict(ErrorCodes.Auth.EmailAlreadyInUse, "Email is already in use.");
-
         public static Error PasswordChangeFailed(string details) =>
             CreateConflict(ErrorCodes.Auth.PasswordChangeFailed, $"Failed to change password: {details}");
-
-        public static Error EmailChangeFailed(string details) =>
-            CreateConflict(ErrorCodes.Auth.EmailChangeFailed, $"Failed to change email: {details}");
-
-        public static Error UsernameChangeFailed(string details) =>
-            CreateConflict(ErrorCodes.Auth.UsernameChangeFailed, $"Failed to change username: {details}");
 
         public static Error UserCreationFailed(string details) =>
             CreateConflict(ErrorCodes.Auth.UserCreationFailed, $"Failed to create user: {details}");

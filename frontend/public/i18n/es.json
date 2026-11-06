@@ -2,6 +2,8 @@
   "common": {
     "unexpected_error": "Ocurrió un error inesperado.",
     "validation_failed": "La validación falló. Por favor, verifica los campos de entrada e inténtalo de nuevo.",
+    "unauthorized": "No has iniciado sesión.",
+    "forbidden": "No tienes permiso para realizar esta acción.",
     "too_many_requests": "Demasiados intentos. Espera un minuto y vuelve a intentarlo.",
     "stale_data": "Alguien más cambió este registro mientras lo editabas. Cierra este diálogo y ábrelo de nuevo para cargar la versión más reciente y guardar.",
     "closeDialog": "Cerrar dialogo",
@@ -69,6 +71,30 @@
   "auth": {
     "invalid_credentials": "Email o contraseña inválidos",
     "account_locked": "Tu cuenta ha sido bloqueada temporalmente por demasiados intentos fallidos de inicio de sesión. Inténtalo de nuevo en 15 minutos.",
+    "first_name": {
+      "required": "El nombre es obligatorio.",
+      "max_length": "El nombre no debe superar los 100 caracteres."
+    },
+    "last_name": {
+      "required": "Los apellidos son obligatorios.",
+      "max_length": "Los apellidos no deben superar los 100 caracteres."
+    },
+    "user_id": {
+      "required": "El ID de usuario es obligatorio.",
+      "invalid": "El ID de usuario no es válido."
+    },
+    "current_password": {
+      "required": "La contraseña actual es obligatoria."
+    },
+    "new_password": {
+      "required": "La nueva contraseña es obligatoria."
+    },
+    "invitation_token": {
+      "required": "El token de invitación es obligatorio."
+    },
+    "password_reset_token": {
+      "required": "El token para restablecer la contraseña es obligatorio."
+    },
     "setup": {
       "is_not_completed": "La configuración no está completa. Por favor, completa la configuración para continuar.",
       "already_been_completed": "La configuración ya ha sido completada. Por favor, inicia sesión para continuar."
@@ -77,18 +103,28 @@
       "not_authenticated": "Usuario no autenticado",
       "already_exists": "El usuario ya existe",
       "not_found": "Usuario no encontrado",
-      "deletion_failed": "No se pudo eliminar el usuario"
+      "deletion_failed": "No se pudo eliminar el usuario",
+      "creation_failed": "No se pudo crear el usuario.",
+      "update_failed": "No se pudo actualizar el usuario."
     },
     "invitation": {
       "invalid_or_expired": "Invitación inválida o expirada",
       "active_already_exists": "Ya existe una invitación activa para este email"
     },
     "password": {
-      "change_failed": "No se pudo cambiar la contraseña"
+      "change_failed": "No se pudo cambiar la contraseña",
+      "required": "La contraseña es obligatoria.",
+      "min_length": "La contraseña debe tener al menos 12 caracteres.",
+      "missing_digit": "La contraseña debe contener al menos un dígito.",
+      "missing_lowercase": "La contraseña debe contener al menos una letra minúscula.",
+      "missing_uppercase": "La contraseña debe contener al menos una letra mayúscula.",
+      "missing_non_alphanumeric": "La contraseña debe contener al menos un carácter no alfanumérico."
     },
     "email": {
       "not_configured": "El email no está configurado para poder enviar emails",
-      "send_failed": "No se pudo enviar el email"
+      "send_failed": "No se pudo enviar el email",
+      "required": "El email es obligatorio.",
+      "invalid": "Introduce una dirección de email válida."
     },
     "password_reset": {
       "invalid_or_expired_reset_token": "El enlace para restablecer la contraseña es inválido o ha expirado"
@@ -271,21 +307,14 @@
     "title": "Cuentas",
     "accountLabel": "Cuenta",
     "account": {
-      "required": "La cuenta es obligatoria.",
       "id_required": "El ID de la cuenta es obligatorio.",
       "not_found": "Cuenta no encontrada.",
-      "creation_failed": "No se pudo crear la cuenta.",
-      "update_failed": "No se pudo actualizar la cuenta.",
-      "deletion_failed": "No se pudo eliminar la cuenta.",
       "name": {
         "required": "El nombre de la cuenta es obligatorio.",
         "max_length": "El nombre de la cuenta es demasiado largo."
       },
       "currency": {
         "invalid": "Moneda no válida."
-      },
-      "opening_balance": {
-        "required": "El saldo inicial es obligatorio."
       },
       "opening_date": {
         "required": "La fecha de apertura es obligatoria."
@@ -315,6 +344,7 @@
     "restore": "Restaurar",
     "confirmRestoreTitle": "Restaurar cuenta",
     "confirmRestoreMessage": "¿Estás seguro de que deseas restaurar la cuenta {{name}}?",
+    "serverError": "Ocurrió un error al procesar la cuenta. Inténtalo de nuevo más tarde.",
     "deleted": "Eliminada",
     "saved": "Cuenta guardada",
     "types": {
@@ -339,7 +369,46 @@
   "transactions": {
     "title": "Transacciones",
     "transaction": {
-      "not_found": "Transacción no encontrada."
+      "not_found": "Transacción no encontrada.",
+      "id_required": "El ID de la transacción es obligatorio.",
+      "date": {
+        "required": "La fecha es obligatoria."
+      },
+      "description": {
+        "required": "La descripción es obligatoria.",
+        "max_length": "La descripción no debe superar los 250 caracteres."
+      },
+      "amount": {
+        "required": "La cantidad es obligatoria.",
+        "invalid": "La cantidad debe ser mayor que cero."
+      },
+      "principal_amount": {
+        "required": "La cantidad amortizada es obligatoria."
+      }
+    },
+    "type": {
+      "invalid": "El tipo de transacción no es válido."
+    },
+    "amount_sign_type": {
+      "mismatch": "El signo de la cantidad no coincide con el tipo de transacción."
+    },
+    "accounts": {
+      "must_be_different": "Las cuentas de origen y destino deben ser distintas."
+    },
+    "principal_amount": {
+      "must_be_less_than_or_equal_to_amount": "La cantidad amortizada no puede ser superior al importe del pago."
+    },
+    "month": {
+      "invalid_range": "El mes debe estar entre 1 y 12."
+    },
+    "date_from_date_to": {
+      "must_come_together": "Indica tanto la fecha de inicio como la de fin."
+    },
+    "page_size": {
+      "invalid_range": "El tamaño de página debe estar entre 1 y 200."
+    },
+    "cursor": {
+      "must_come_together": "Indica ambos valores del cursor."
     },
     "add": "Añadir",
     "loading": "Cargando transacciones...",
@@ -402,6 +471,7 @@
     "fromAccountRequired": "La cuenta origen es obligatoria",
     "toAccountLabel": "Cuenta destino",
     "toAccountRequired": "La cuenta destino es obligatoria",
-    "toAccountNotSameAsFromAccount": "La cuenta destino no puede ser la misma que la cuenta origen"
+    "toAccountNotSameAsFromAccount": "La cuenta destino no puede ser la misma que la cuenta origen",
+    "serverError": "Ocurrió un error al procesar la transacción. Inténtalo de nuevo más tarde."
   }
 }
