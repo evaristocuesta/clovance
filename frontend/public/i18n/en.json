@@ -2,6 +2,8 @@
   "common": {
     "unexpected_error": "An unexpected error occurred.",
     "validation_failed": "Validation failed. Please check the input fields and try again.",
+    "unauthorized": "You are not authenticated.",
+    "forbidden": "You are not authorized to perform this action.",
     "too_many_requests": "Too many attempts. Please wait a minute and try again.",
     "stale_data": "Someone else changed this record while you were editing. Close this dialog and open it again to load the latest version, then save.",
     "closeDialog": "Close dialog",
@@ -69,26 +71,60 @@
   "auth": {
     "invalid_credentials": "Invalid email or password",
     "account_locked": "Your account has been temporarily locked due to too many failed login attempts. Please try again in 15 minutes.",
+    "first_name": {
+      "required": "First name is required.",
+      "max_length": "First name must not exceed 100 characters."
+    },
+    "last_name": {
+      "required": "Last name is required.",
+      "max_length": "Last name must not exceed 100 characters."
+    },
+    "user_id": {
+      "required": "User ID is required.",
+      "invalid": "User ID is invalid."
+    },
+    "current_password": {
+      "required": "Current password is required."
+    },
+    "new_password": {
+      "required": "New password is required."
+    },
+    "invitation_token": {
+      "required": "Invitation token is required."
+    },
+    "password_reset_token": {
+      "required": "Password reset token is required."
+    },
     "setup": {
-      "is_not_completed": "La configuración no está completa. Por favor, completa la configuración para continuar.",
-      "already_been_completed": "La configuración ya ha sido completada. Por favor, inicia sesión para continuar."
+      "is_not_completed": "Setup is not complete. Please complete setup to continue.",
+      "already_been_completed": "Setup has already been completed. Please sign in to continue."
     },
     "user": {
-      "not_authenticated": "Usuario no autenticado",
-      "already_exists": "El usuario ya existe",
-      "not_found": "Usuario no encontrado",
-      "deletion_failed": "Failed to delete user"
+      "not_authenticated": "You are not authenticated.",
+      "already_exists": "A user with this email already exists.",
+      "not_found": "User not found.",
+      "deletion_failed": "Failed to delete user",
+      "creation_failed": "Failed to create user.",
+      "update_failed": "Failed to update user."
     },
     "invitation": {
-      "invalid_or_expired": "Invitación inválida o expirada",
-      "active_already_exists": "Ya existe una invitación activa para este email"
+      "invalid_or_expired": "The invitation is invalid or has expired.",
+      "active_already_exists": "There is already an active invitation for this email address."
     },
     "password": {
-      "change_failed": "Failed to change password"
+      "change_failed": "Failed to change password",
+      "required": "Password is required.",
+      "min_length": "Password must be at least 12 characters.",
+      "missing_digit": "Password must contain at least one digit.",
+      "missing_lowercase": "Password must contain at least one lowercase letter.",
+      "missing_uppercase": "Password must contain at least one uppercase letter.",
+      "missing_non_alphanumeric": "Password must contain at least one non-alphanumeric character."
     },
     "email": {
       "not_configured": "Email is not configured to send emails",
-      "send_failed": "Failed to send email"
+      "send_failed": "Failed to send email",
+      "required": "Email is required.",
+      "invalid": "Enter a valid email address."
     },
     "password_reset": {
       "invalid_or_expired_reset_token": "Password reset link is invalid or has expired"
@@ -271,21 +307,14 @@
     "title": "Accounts",
     "accountLabel": "Account",
     "account": {
-      "required": "Account is required.",
       "id_required": "Account ID is required.",
       "not_found": "Account not found.",
-      "creation_failed": "Failed to create account.",
-      "update_failed": "Failed to update account.",
-      "deletion_failed": "Failed to delete account.",
       "name": {
         "required": "Account name is required.",
         "max_length": "Account name is too long."
       },
       "currency": {
         "invalid": "Invalid currency."
-      },
-      "opening_balance": {
-        "required": "Opening balance is required."
       },
       "opening_date": {
         "required": "Opening date is required."
@@ -315,6 +344,7 @@
     "restore": "Restore",
     "confirmRestoreTitle": "Restore Account",
     "confirmRestoreMessage": "Are you sure you want to restore the account {{name}}?",
+    "serverError": "An error occurred while processing the account. Please try again later.",
     "deleted": "Deleted",
     "saved": "Account saved",
     "types": {
@@ -339,7 +369,46 @@
   "transactions": {
     "title": "Transactions",
     "transaction": {
-      "not_found": "Transaction not found."
+      "not_found": "Transaction not found.",
+      "id_required": "Transaction ID is required.",
+      "date": {
+        "required": "Date is required."
+      },
+      "description": {
+        "required": "Description is required.",
+        "max_length": "Description must not exceed 250 characters."
+      },
+      "amount": {
+        "required": "Amount is required.",
+        "invalid": "Amount must be greater than zero."
+      },
+      "principal_amount": {
+        "required": "Principal amount is required."
+      }
+    },
+    "type": {
+      "invalid": "Transaction type is invalid."
+    },
+    "amount_sign_type": {
+      "mismatch": "The amount sign does not match the transaction type."
+    },
+    "accounts": {
+      "must_be_different": "The source and destination accounts must be different."
+    },
+    "principal_amount": {
+      "must_be_less_than_or_equal_to_amount": "Principal amount cannot be greater than the payment amount."
+    },
+    "month": {
+      "invalid_range": "Month must be between 1 and 12."
+    },
+    "date_from_date_to": {
+      "must_come_together": "Provide both start and end dates."
+    },
+    "page_size": {
+      "invalid_range": "Page size must be between 1 and 200."
+    },
+    "cursor": {
+      "must_come_together": "Provide both cursor values."
     },
     "add": "Add",
     "loading": "Loading transactions...",
@@ -402,6 +471,7 @@
     "fromAccountRequired": "From account is required",
     "toAccountLabel": "To Account",
     "toAccountRequired": "To account is required",
-    "toAccountNotSameAsFromAccount": "To account cannot be the same as From account"
+    "toAccountNotSameAsFromAccount": "To account cannot be the same as From account",
+    "serverError": "An error occurred while processing the transaction. Please try again later."
   }
 }
