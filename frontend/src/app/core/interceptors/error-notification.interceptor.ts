@@ -1,7 +1,7 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
-import { catchError, throwError } from 'rxjs';
+import { catchError, take, throwError } from 'rxjs';
 import { ToastService } from '@shared/ui/toast/toast.service';
 
 /**
@@ -32,7 +32,10 @@ export const errorNotificationInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       const errorCode = error?.error?.errorCode as string | undefined;
       const key = errorCode ? errorCode : 'common.unexpected_error';
-      toastService.error(translocoService.translate(key));
+      translocoService
+        .selectTranslate<string>(key)
+        .pipe(take(1))
+        .subscribe((message) => toastService.error(message));
 
       return throwError(() => error);
     }),
