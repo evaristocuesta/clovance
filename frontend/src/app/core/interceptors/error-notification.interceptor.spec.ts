@@ -6,20 +6,11 @@ import {
   HttpResponse,
 } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { Translation, TranslocoLoader, provideTransloco } from '@jsverse/transloco';
-import { Observable, of, throwError } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { ToastService } from '@shared/ui/toast/toast.service';
 
 import { errorNotificationInterceptor } from './error-notification.interceptor';
-
-class TranslocoTestingLoader implements TranslocoLoader {
-  getTranslation(): Observable<Translation> {
-    return of({
-      common: { unexpected_error: 'An unexpected error occurred.' },
-      auth: { invalid_credentials: 'Invalid email or password' },
-    });
-  }
-}
+import { provideTestTransloco } from '@testing/test-transloco';
 
 describe('errorNotificationInterceptor', () => {
   const interceptor: HttpInterceptorFn = (req, next) =>
@@ -29,17 +20,7 @@ describe('errorNotificationInterceptor', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        provideTransloco({
-          config: {
-            availableLangs: ['en', 'es'],
-            defaultLang: 'en',
-            reRenderOnLangChange: true,
-            prodMode: true,
-          },
-          loader: TranslocoTestingLoader,
-        }),
-      ],
+      providers: [provideTestTransloco()],
     });
 
     toastService = TestBed.inject(ToastService);
