@@ -14,6 +14,11 @@
 # AAA Certificate Services, so blocking only the emSign root leaves that path open.
 set -u
 
+if [ "$#" -eq 0 ]; then
+	echo "ERROR: Usage: check-ca-bundle.sh <bundle.crt> [more.crt ...]"
+	exit 2
+fi
+
 BAD_ROOTS="86a1ecba089c4a8d3bbe2734c612ba341d813e043cf9e8a862cd5c57a36bbe6b
 d7a7a0fb5d7e2731d771e9484ebcdef71d5f0c3e0a2948782bc83ee0ea699ef4"
 
@@ -26,14 +31,32 @@ for f in "$@"; do
 		continue
 	fi
 
-	d=$(mktemp -d)
+	begins=$(grep -c -- '-----BEGIN CERTIFICATE-----' "$f" || true)
+	ends=$(grep -c -- '-----END CERTIFICATE-----' "$f" || true)
+	if [ "$begins" -eq 0 ] || [ "$begins" -ne "$ends" ]; then
+		echo "ERROR: CA bundle is empty or has incomplete PEM certificates: $f"
+		rc=1
+		continue
+	fi
+
+	if ! d=$(mktemp -d); then
+		echo "ERROR: Could not create temporary directory to inspect CA bundle: $f"
+		rc=1
+		continue
+	fi
 	awk -v d="$d" 'BEGIN { i = 0 } /BEGIN CERT/ { i++ } i > 0 { print > sprintf("%s/c%03d.pem", d, i) }' "$f"
-	total=$(ls "$d" | wc -l)
+	total=$begins
 	bad=0
 
 	for c in "$d"/*.pem; do
-		fp=$(awk 'BEGIN { p = 0 } /BEGIN CERT/ { p = 1; next } /END CERT/ { p = 0 } p' "$c" \
-			| tr -d '\n\r' | base64 -d 2>/dev/null | sha256sum | cut -d' ' -f1)
+		der="$c.der"
+		if ! awk 'BEGIN { p = 0 } /BEGIN CERT/ { p = 1; next } /END CERT/ { p = 0 } p' "$c" \
+			| tr -d '\n\r' | base64 -d > "$der" 2>/dev/null || [ ! -s "$der" ]; then
+			echo "ERROR: Could not decode certificate in CA bundle: $f"
+			bad=$((bad + 1))
+			continue
+		fi
+		fp=$(sha256sum "$der" | cut -d' ' -f1)
 		for b in $BAD_ROOTS; do
 			if [ "$fp" = "$b" ]; then
 				echo "FAIL: $f still trusts a compromised eMudhra root ($fp)"
