@@ -1,15 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Translation, TranslocoLoader, provideTransloco } from '@jsverse/transloco';
-import { Observable, of } from 'rxjs';
 
 import { ToastContainer } from './toast-container';
 import { ToastService } from './toast.service';
-
-class TranslocoTestingLoader implements TranslocoLoader {
-  getTranslation(): Observable<Translation> {
-    return of({ common: { closeNotification: 'Close notification' } });
-  }
-}
+import { provideTestTransloco } from '@testing/test-transloco';
 
 describe('ToastContainer', () => {
   let fixture: ComponentFixture<ToastContainer>;
@@ -18,17 +11,7 @@ describe('ToastContainer', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ToastContainer],
-      providers: [
-        provideTransloco({
-          config: {
-            availableLangs: ['en', 'es'],
-            defaultLang: 'en',
-            reRenderOnLangChange: true,
-            prodMode: true,
-          },
-          loader: TranslocoTestingLoader,
-        }),
-      ],
+      providers: [provideTestTransloco()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ToastContainer);

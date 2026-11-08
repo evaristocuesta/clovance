@@ -13,12 +13,13 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
-    "module": "preserve", 
+    "module": "preserve",
     "paths": {
-      "@core/*": ["./src/app/core/*"], 
-      "@layouts/*": ["./src/app/layouts/*"], 
+      "@core/*": ["./src/app/core/*"],
+      "@layouts/*": ["./src/app/layouts/*"],
       "@features/*": ["./src/app/features/*"],
-      "@shared/*": ["./src/app/shared/*"]
+      "@shared/*": ["./src/app/shared/*"],
+      "@testing/*": ["./src/testing/*"]
     }
   },
   "angularCompilerOptions": {

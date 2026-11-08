@@ -1,16 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
-import { Translation, TranslocoLoader, provideTransloco } from '@jsverse/transloco';
 
 import { ChangePassword } from './change-password';
 import { AuthService } from '@core/services/auth.service';
 import { ToastService } from '@shared/ui/toast/toast.service';
-
-class TranslocoTestingLoader implements TranslocoLoader {
-  getTranslation(): any {
-    return of({});
-  }
-}
+import { provideTestTransloco } from '@testing/test-transloco';
 
 describe('ChangePassword', () => {
   let component: ChangePassword;
@@ -20,15 +14,7 @@ describe('ChangePassword', () => {
     await TestBed.configureTestingModule({
       imports: [ChangePassword],
       providers: [
-        provideTransloco({
-          config: {
-            availableLangs: ['en', 'es'],
-            defaultLang: 'en',
-            reRenderOnLangChange: true,
-            prodMode: true,
-          },
-          loader: TranslocoTestingLoader,
-        }),
+        provideTestTransloco(),
         {
           provide: AuthService,
           useValue: {

@@ -1,14 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Translation, TranslocoLoader, TranslocoService, provideTransloco } from '@jsverse/transloco';
-import { Observable, of } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 
 import { LanguageSelection } from './language-selection';
-
-class TranslocoTestingLoader implements TranslocoLoader {
-  getTranslation(): Observable<Translation> {
-    return of({});
-  }
-}
+import { provideTestTransloco } from '@testing/test-transloco';
 
 describe('LanguageSelection', () => {
   let component: LanguageSelection;
@@ -17,17 +11,7 @@ describe('LanguageSelection', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [LanguageSelection],
-      providers: [
-        provideTransloco({
-          config: {
-            availableLangs: ['en', 'es'],
-            defaultLang: 'en',
-            reRenderOnLangChange: true,
-            prodMode: true,
-          },
-          loader: TranslocoTestingLoader,
-        }),
-      ],
+      providers: [provideTestTransloco()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LanguageSelection);

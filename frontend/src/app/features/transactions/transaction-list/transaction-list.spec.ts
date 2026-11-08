@@ -87,7 +87,7 @@ describe('TransactionList', () => {
 
     expect(deleteTransaction).toHaveBeenCalledWith('tx-1');
     expect(toastService.toasts()).toEqual([
-      { id: 0, variant: 'success', message: 'transactions.deleted' },
+      { id: 0, variant: 'success', message: 'Transaction deleted' },
     ]);
   });
 

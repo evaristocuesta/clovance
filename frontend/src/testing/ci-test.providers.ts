@@ -2,27 +2,13 @@ import { provideHttpClient } from '@angular/common/http';
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { EnvironmentProviders, Provider } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideTransloco, Translation, TranslocoLoader } from '@jsverse/transloco';
-import { Observable, of } from 'rxjs';
 
-class TranslocoTestingLoader implements TranslocoLoader {
-  getTranslation(): Observable<Translation> {
-    return of({});
-  }
-}
+import { provideTestTransloco } from '@testing/test-transloco';
 
 const providers: Array<Provider | EnvironmentProviders> = [
   provideHttpClient(),
   provideRouter([]),
-  provideTransloco({
-    config: {
-      availableLangs: ['en', 'es'],
-      defaultLang: 'en',
-      reRenderOnLangChange: true,
-      prodMode: true,
-    },
-    loader: TranslocoTestingLoader,
-  }),
+  provideTestTransloco(),
   {
     provide: DialogRef,
     useValue: {
