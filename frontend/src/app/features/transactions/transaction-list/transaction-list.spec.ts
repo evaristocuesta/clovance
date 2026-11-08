@@ -92,6 +92,7 @@ describe('TransactionList', () => {
   });
 
   it('does not show a toast when the delete fails (the global HTTP interceptor already shows one)', () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
     deleteTransaction.mockReturnValue(throwError(() => new Error('boom')));
     const toastService = TestBed.inject(ToastService);
 
@@ -99,5 +100,9 @@ describe('TransactionList', () => {
     dialogClosed$.next(true);
 
     expect(toastService.toasts()).toEqual([]);
+    // The failure is logged for debugging; keep the assertion so the spy cannot be
+    // removed without the test noticing.
+    expect(consoleError).toHaveBeenCalledWith('Error deleting transaction:', expect.any(Error));
+    consoleError.mockRestore();
   });
 });
