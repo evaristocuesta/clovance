@@ -23,7 +23,7 @@ Backend (`api/Clovance.slnx` exists; CI restores/builds per project dir):
 - Do not "fix" this with `TestingPlatformDotnetTestSupport=true` (the VSTest bridge) — it was removed in Microsoft.Testing.Platform 2.x with the .NET 10 SDK.
 - Add `test` runner settings to `api/global.json` when the test stack changes again; never add an `sdk` section there (SDK resolution is global for everything under `api/`).
 
-Frontend (`cd frontend`; pnpm 11.8.0, Node 22):
+Frontend (`cd frontend`; pnpm 12.18.0, Node 24):
 - `pnpm install --frozen-lockfile`
 - `pnpm build`
 - `pnpm test --watch=false --providers-file=src/testing/ci-test.providers.ts` (this is the CI command; `pnpm test` alone runs watch mode, and the providers file stubs Transloco + CDK dialogs)

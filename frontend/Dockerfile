@@ -4,7 +4,7 @@ WORKDIR /app
 ENV CI=true
 
 RUN corepack enable
-RUN corepack prepare pnpm@11.8.0 --activate
+RUN corepack prepare pnpm@12.18.0 --activate
 
 COPY package.json package.json
 COPY pnpm-lock.yaml pnpm-lock.yaml
