@@ -1,6 +1,6 @@
-import {ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Icon } from "../icon/icon";
+import { Icon } from '../icon/icon';
 import { ConfirmDialogOptions } from './confirm-dialog-options';
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { IconName } from '../icon/icon-name';
@@ -11,11 +11,11 @@ import { Dialog } from '../dialog/dialog';
   imports: [CommonModule, Icon, Dialog],
   templateUrl: './confirm-dialog.html',
   styleUrl: './confirm-dialog.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ConfirmDialog { 
-    dialogRef = inject<DialogRef>(DialogRef);
-    data = inject<ConfirmDialogOptions>(DIALOG_DATA);
+export class ConfirmDialog {
+  dialogRef = inject<DialogRef>(DialogRef);
+  data = inject<ConfirmDialogOptions | undefined>(DIALOG_DATA);
 
   protected get confirmIcon(): IconName | null {
     return this.data?.confirmIcon ?? 'check';

@@ -14,7 +14,7 @@
         <option value="Income">{{ t('transactions.titleIncome') }}</option>
         <option value="Expense">{{ t('transactions.titleExpense') }}</option>
         }
-        @if (this.data?.transaction?.id && this.data?.transaction?.type === 'OpeningBalance') {
+        @if (this.data?.transaction?.id && this.data.transaction.type === 'OpeningBalance') {
         <option value="OpeningBalance">{{ t('transactions.titleOpeningBalance') }}</option>
         }
       </select>

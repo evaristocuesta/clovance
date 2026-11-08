@@ -55,7 +55,7 @@ export class AccountForm implements OnInit {
   );
 
   dialogRef = inject<DialogRef>(DialogRef);
-  data = inject<Account>(DIALOG_DATA);
+  data = inject<Account | undefined>(DIALOG_DATA);
 
   ngOnInit(): void {
     if (this.data?.id) {
