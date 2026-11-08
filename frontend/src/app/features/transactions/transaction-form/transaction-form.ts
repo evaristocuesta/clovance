@@ -54,7 +54,7 @@ export class TransactionForm implements OnInit {
   private readonly translocoService = inject(TranslocoService);
 
   dialogRef = inject<DialogRef>(DialogRef);
-  data = inject<TransactionFormData>(DIALOG_DATA, { optional: true });
+  data = inject<TransactionFormData | undefined>(DIALOG_DATA);
 
   ngOnInit(): void {
     const dataType = this.data?.type;
