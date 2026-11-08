@@ -33,6 +33,14 @@ EXPOSE 8081
 
 COPY --from=publish /app/publish .
 
+# The upstream base (Ubuntu 24.04) still ships apt 2.8.3 with fixable HIGH findings
+# (CVE-2026-109518, fixed in 2.8.4ubuntu0.1), so a plain rebuild is not enough.
+# Upgrading only these two packages keeps the rest of the base image unchanged; the
+# list is explicit so a routine package bump cannot alter the runtime unnoticed.
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends --only-upgrade apt libapt-pkg6.0t64 \
+	&& rm -rf /var/lib/apt/lists/*
+
 # The app generates its JWT signing key (and the data protection keys) under its own home
 # directory at startup, so it needs write access there. Nothing under /app is writable.
 RUN chown -R app:app /home/app
