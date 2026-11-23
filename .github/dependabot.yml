@@ -4,18 +4,42 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    groups:
+      # One PR for minor/patch action bumps; majors stay in their own PR.
+      github-actions-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   # API: NuGet packages (Central Package Management lives in api/Directory.Packages.props).
   - package-ecosystem: nuget
     directory: /api
     schedule:
       interval: weekly
+    groups:
+      # One PR for minor/patch NuGet bumps; majors (for example the .NET 11
+      # line of EF Core/ASP.NET Core packages) stay in their own PR.
+      nuget-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   # Frontend: npm dependencies managed by pnpm.
   - package-ecosystem: npm
     directory: /frontend
     schedule:
       interval: weekly
+    groups:
+      npm-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   # Base images of both published Docker images (floating tags such as
   # mcr.microsoft.com/dotnet/aspnet:10.0 and nginxinc/nginx-unprivileged:alpine).
@@ -23,8 +47,22 @@ updates:
     directory: /frontend
     schedule:
       interval: weekly
+    groups:
+      docker-frontend-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: docker
     directory: /api/src/Clovance.ApiService
     schedule:
       interval: weekly
+    groups:
+      docker-api-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
