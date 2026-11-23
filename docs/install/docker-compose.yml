@@ -42,7 +42,7 @@ services:
       OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
       HTTP_PORTS: "${CLOVANCE_APISERVICE_PORT}"
-      ConnectionStrings__clovance-database: "Host=clovance-postgres;Port=5432;Username=${POSTGRES_USERNAME};Password=${POSTGRES_PASSWORD};Database=clovance-database"
+      ConnectionStrings__clovance-database: "Host=clovance-postgres;Port=5432;Username=${POSTGRES_USERNAME};Password=${POSTGRES_PASSWORD};Database=clovance-database;GSS Encryption Mode=Disable"
       CLOVANCE_DATABASE_HOST: "clovance-postgres"
       CLOVANCE_DATABASE_PORT: "5432"
       CLOVANCE_DATABASE_USERNAME: "${POSTGRES_USERNAME}"
