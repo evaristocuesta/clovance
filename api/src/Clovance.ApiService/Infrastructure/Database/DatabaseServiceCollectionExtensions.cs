@@ -9,6 +9,18 @@ public static class DatabaseServiceCollectionExtensions
     {
         var connectionString = configuration.GetConnectionString("clovance-database");
 
+        // Npgsql 10 defaults to GssEncryptionMode=Prefer, so against a GSS-capable PostgreSQL
+        // server the .NET runtime tries to load libgssapi_krb5.so.2 (not shipped in the
+        // official .NET images) and writes an uncatchable error to stderr on every physical
+        // connection. Kerberos is not used here, so disable GSS encryption unless the
+        // connection string already sets it explicitly (Npgsql issue npgsql#6360).
+        const string gssEncryptionMode = "GSS Encryption Mode=";
+        if (connectionString is not null &&
+            !connectionString.Contains(gssEncryptionMode, StringComparison.OrdinalIgnoreCase))
+        {
+            connectionString = $"{connectionString};{gssEncryptionMode}Disable";
+        }
+
         Action<DbContextOptionsBuilder> configureDbContext = options =>
         {
             options
