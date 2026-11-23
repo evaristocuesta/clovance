@@ -113,14 +113,15 @@ This uses `appsettings.Development.json` and **does not** attempt to publish con
 
 ### Generate Deployment Manifests
 
-Aspire can generate deployment manifests (Kubernetes, Docker Compose, etc.) that reference the images published to GHCR:
+Aspire can generate deployment artifacts from the application model (Docker Compose, Kubernetes, etc.) that reference the images published to GHCR. Starting with Aspire 17, publishing goes through the Aspire CLI; `dotnet run --operation publish` is rejected:
 
 ```bash
-# Generate manifests
-dotnet run --project api/aspire/Clovance.AppHost \
-  -- \
-  --publisher manifest \
-  --output-path ./manifests
+# Generate deployment artifacts (writes to ./aspire-output)
+cd api/aspire/Clovance.AppHost
+aspire publish -e Production
+
+# Or choose a different output directory
+aspire publish -e Production -o ./manifests
 ```
 
 This generates deployment files ready to use with the images published in GHCR.

@@ -82,7 +82,7 @@ var jwtKeyFilePath =
     builder.Configuration["Jwt:KeyFilePath"] ?? "/home/app/jwt.key";
 
 var apiService = builder
-    .AddProject<Projects.Clovance_ApiService>("clovance-apiservice")
+    .AddDotnetProject("clovance-apiservice", "../../src/Clovance.ApiService/Clovance.ApiService.csproj")
     .WithReference(database)
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", builder.Environment.EnvironmentName)
     .WithEnvironment("Jwt__KeyFilePath", jwtKeyFilePath)

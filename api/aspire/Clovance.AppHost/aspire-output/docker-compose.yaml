@@ -1,6 +1,8 @@
 services:
   env-dashboard:
-    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:13.6"
+    image: "mcr.microsoft.com/aspire/nightly/dashboard:17.0"
+    environment:
+      ASPIRE_DASHBOARD_TELEMETRY_OPTOUT: "true"
     ports:
       - "${CLOVANCE_DASHBOARD_BIND_ADDRESS:-0.0.0.0}::18888"
     expose:
@@ -10,7 +12,7 @@ services:
       - "aspire"
     restart: "always"
   clovance-postgres:
-    image: "docker.io/library/postgres:18.3"
+    image: "docker.io/library/postgres:18.6"
     environment:
       POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
@@ -34,6 +36,7 @@ services:
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
       HTTP_PORTS: "${CLOVANCE_APISERVICE_PORT}"
       ConnectionStrings__clovance-database: "Host=clovance-postgres;Port=5432;Username=${POSTGRES_USERNAME};Password=${POSTGRES_PASSWORD};Database=clovance-database"
+      ConnectionStrings__clovance_database: "Host=clovance-postgres;Port=5432;Username=${POSTGRES_USERNAME};Password=${POSTGRES_PASSWORD};Database=clovance-database"
       CLOVANCE_DATABASE_HOST: "clovance-postgres"
       CLOVANCE_DATABASE_PORT: "5432"
       CLOVANCE_DATABASE_USERNAME: "${POSTGRES_USERNAME}"
