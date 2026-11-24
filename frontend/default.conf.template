@@ -19,8 +19,18 @@ server {
     add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
     add_header Strict-Transport-Security $hsts_header always;
 
+    # Docker gives a container a new IP every time Compose recreates it, but nginx
+    # resolves a literal proxy_pass host name only when it loads a config. After an
+    # update the cached IP can belong to a different service, and every /api request
+    # fails with "connect() failed (111: Connection refused)" and a 502 until the
+    # frontend container is restarted. Resolving through Docker's embedded DNS per
+    # request keeps the upstream address current; `valid` caps the cache.
+    resolver 127.0.0.11 valid=10s ipv6=off;
+    set $api_upstream ${CLOVANCE_APISERVICE_HTTP};
+
     location /api/ {
-        proxy_pass ${CLOVANCE_APISERVICE_HTTP};
+        # A variable is what defers name resolution to request time.
+        proxy_pass $api_upstream;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
