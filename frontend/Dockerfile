@@ -21,26 +21,25 @@ RUN ./node_modules/.bin/ng build
 # Runs as uid 101 (nginx) by default: pid, temp paths and cache live in /tmp and the
 # image's entrypoint needs no root privileges. The stock nginx:alpine image cannot be
 # started with a non-root USER because its config writes pid and cache under /var.
-FROM nginxinc/nginx-unprivileged:alpine
+#
+# Pinned rather than floating on `alpine` so that a base change is a visible diff and
+# Dependabot can bump it. Note the image moved from the `nginxinc/` namespace, whose
+# `alpine` tag has been frozen on nginx 1.31.7 since 2026-10-19, to `nginx/`; 1.31.7 is
+# affected by the advisories fixed in 1.31.9 and 1.31.10 (see
+# https://nginx.org/en/security_advisories.html).
+FROM nginx/nginx-unprivileged:1.31.10-alpine3.24
 
 COPY --from=build /app/dist/clovance/browser /usr/share/nginx/html
 COPY --from=build /app/default.conf.template /etc/nginx/templates/default.conf.template
 
-# The upstream base (built 2026-10-19) predates the October security releases and still
-# ships packages with fixable CVEs, so a plain rebuild is not enough:
-#   - ca-certificates 20260909-r0 -> 20261020-r0: still trusts "emSign ECC Root CA - G3",
-#     one of the roots of the compromised eMudhra intermediates (CVE-2026-111943). The
-#     bundle is what curl/wget validate outbound TLS against.
-#   - brotli-libs 1.2.0-r1 -> 1.2.1-r0: out-of-bounds write in the decoder (CVE-2026-111497).
-#   - curl/libcurl 8.22.0-r0 -> 8.23.0-r0 and libexpat 2.9.0-r0 -> 2.10.0-r0.
-#   - musl/musl-utils 1.2.6-r2 -> 1.2.6-r3 (CVE-2026-107891) and zlib 1.3.2-r0 ->
-#     1.4-r0 (CVE-2026-85091), found in the latest Trivy scan.
-# Keep this list explicit rather than `apk upgrade` so a routine package bump cannot
-# change nginx behaviour unnoticed. Placed last so the COPY layers stay cached.
-# The base image runs as uid 101, so root is needed for the package database.
-USER root
-RUN apk upgrade --no-cache ca-certificates brotli-libs curl libcurl libexpat musl musl-utils zlib
-USER 101
+# No `apk upgrade` step on purpose: this base already carries the Alpine fixes for
+# ca-certificates (CVE-2026-111943), brotli-libs (CVE-2026-111497), curl/libcurl,
+# libexpat, musl (CVE-2026-107891) and zlib (CVE-2026-85091), and a Trivy scan with
+# --severity HIGH,CRITICAL --ignore-unfixed comes back clean. Keep it that way by
+# bumping the pinned tag instead of patching packages here.
+#
+# Trivy does not map nginx.org packages to CVEs, so nginx itself is invisible to the
+# publish-time scan: track it through this tag and the nginx security advisories.
 
 # Expose the default nginx port
 EXPOSE 7000
