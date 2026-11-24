@@ -8,13 +8,13 @@ Create a `.env` file. SMTP is optional: leave its host, username, password, and 
 
 ```
 # Container image name for clovance-apiservice
-CLOVANCE_APISERVICE_IMAGE=ghcr.io/evaristocuesta/clovance/clovance-api:1.0.0
+CLOVANCE_APISERVICE_IMAGE=ghcr.io/evaristocuesta/clovance/clovance-api:latest
 
 # Default container port for clovance-apiservice
 CLOVANCE_APISERVICE_PORT=8080
 
 # Container image name for clovance-frontend
-CLOVANCE_FRONTEND_IMAGE=ghcr.io/evaristocuesta/clovance/clovance-frontend:1.0.0
+CLOVANCE_FRONTEND_IMAGE=ghcr.io/evaristocuesta/clovance/clovance-frontend:latest
 
 # Parameter frontend-base-url
 FRONTEND_BASE_URL=http://localhost:7000
