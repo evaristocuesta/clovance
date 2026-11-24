@@ -41,8 +41,9 @@ updates:
           - "minor"
           - "patch"
 
-  # Base images of both published Docker images (floating tags such as
-  # mcr.microsoft.com/dotnet/aspnet:10.0 and nginxinc/nginx-unprivileged:alpine).
+  # Base images of both published Docker images. The API keeps a floating tag
+  # (mcr.microsoft.com/dotnet/aspnet:10.0); the frontend pins an exact nginx version
+  # (nginx/nginx-unprivileged:1.31.10-alpine3.24) so base changes are reviewable here.
   - package-ecosystem: docker
     directory: /frontend
     schedule:
