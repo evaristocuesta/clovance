@@ -1,3 +1,10 @@
+---
+title: Installing Clovance
+description: Install Clovance on Windows, Linux, or macOS with the one-command installers. Docker is the only requirement.
+lang: en
+translation: /INSTALL.es.html
+---
+
 # Installing Clovance
 
 Clovance ships with cross-platform installers for Windows, Linux, and macOS. They check Docker, ask a few questions, generate the configuration, pull the images, and start the app.
@@ -152,5 +159,5 @@ On Linux/macOS, if the data directory was created by the container (root-owned),
 
 ## 📚 Related documentation
 
-- [Docker Usage Guide](./DOCKER_USAGE.md) - Manual Docker Compose setup, ports, reverse proxy.
-- [Docker Image Publishing](./DOCKER_PUBLISH.md) - Publishing and deployment guide.
+- [Docker Usage Guide](./DOCKER_USAGE.html) - Manual Docker Compose setup, ports, reverse proxy.
+- [Docker Image Publishing](./DOCKER_PUBLISH.html) - Publishing and deployment guide.

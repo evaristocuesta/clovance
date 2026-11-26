@@ -2,13 +2,70 @@ title: Clovance
 description: A personal finance management application that helps you keep track of your daily finances, loans, and maintain a clear history of your financial transactions.
 baseurl: "/clovance"
 url: "https://evaristocuesta.github.io"
-theme: jekyll-theme-cayman
+lang: en-US
 
-# Navigation shown in the Cayman theme
+# Repository metadata used by the layout (header, footer and "edit this page" links).
 github:
   is_project_page: true
   repository_url: https://github.com/evaristocuesta/clovance
+  repository_name: clovance
+  owner_name: evaristocuesta
+  owner_url: https://github.com/evaristocuesta
 
-# Exclude non-content files from the published site
+# Left sidebar navigation, per language.
+nav:
+  en:
+    - section: Overview
+      items:
+        - title: Home
+          url: /
+          icon: home
+    - section: Guides
+      items:
+        - title: Install
+          url: /INSTALL.html
+          icon: download
+        - title: Docker Usage
+          url: /DOCKER_USAGE.html
+          icon: cube
+        - title: Docker Publish
+          url: /DOCKER_PUBLISH.html
+          icon: cloud-upload
+        - title: Versioning Examples
+          url: /VERSIONING_EXAMPLES.html
+          icon: tag
+  es:
+    - section: Resumen
+      items:
+        - title: Inicio
+          url: /index.es.html
+          icon: home
+    - section: Guías
+      items:
+        - title: Instalar
+          url: /INSTALL.es.html
+          icon: download
+        - title: Uso con Docker
+          url: /DOCKER_USAGE.es.html
+          icon: cube
+        - title: Publicar en Docker
+          url: /DOCKER_PUBLISH.es.html
+          icon: cloud-upload
+        - title: Ejemplos de versionado
+          url: /VERSIONING_EXAMPLES.es.html
+          icon: tag
+
+# Every Markdown page uses the docs page layout unless it overrides it.
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: page
+
+# Exclude non-content files from the published site.
 exclude:
   - "*.tmp"
+  - "Gemfile"
+  - "Gemfile.lock"
+  - "vendor"
+  - ".jekyll-cache"

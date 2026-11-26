@@ -1,3 +1,10 @@
+---
+title: Using Clovance Docker Images
+description: Run Clovance with Docker Compose, configure ports and SMTP, and back up your PostgreSQL data.
+lang: en
+translation: /DOCKER_USAGE.es.html
+---
+
 # Using Clovance Docker Images
 
 This document shows how to use the Docker images published to GitHub Container Registry (GHCR).
@@ -199,15 +206,17 @@ Docker automatically pulls the correct image for your platform.
 
 The published Docker images can be used directly in GitHub Actions workflows.
 
+{% raw %}
 ```yaml
 - name: Pull Docker images
   run: |
     docker pull ghcr.io/evaristocuesta/clovance/clovance-api:${{ github.ref_name }}
     docker pull ghcr.io/evaristocuesta/clovance/clovance-frontend:${{ github.ref_name }}
 ```
+{% endraw %}
 
 ---
 
 ## 📚 Related Documentation
 
-- [Publishing Docker Images](DOCKER_PUBLISH.md)
+- [Publishing Docker Images](DOCKER_PUBLISH.html)

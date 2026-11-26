@@ -1,12 +1,16 @@
-# Clovance
-
-**Tus finanzas personales, en tu propio servidor.** Open source, self-hosted, instalación en un solo comando.
+---
+layout: home
+title: Clovance
+description: Clovance es una app de finanzas personales self-hosted y open source. Controla gastos, ingresos, cuentas, transferencias y préstamos con tus datos en tu propio servidor.
+lang: es
+translation: /
+tagline: Tus finanzas personales, en tu propio servidor.
+hero_sub: Registra gastos e ingresos, gestiona varias cuentas, transfiere entre ellas, controla préstamos y entiende a dónde va tu dinero, sin renunciar a tu privacidad.
+---
 
 Clovance te ayuda a llevar el control de tu dinero sin renunciar a tu privacidad: registra gastos e ingresos, gestiona varias cuentas, transfiere entre ellas, controla préstamos y analiza tus patrones de gasto. **Tus datos se quedan en tu servidor**, no en la nube de nadie, y **no hay suscripción mensual**.
 
-📖 [Read in English](./index.md)
-
-![Clovance](./images/clovance-screenshot-01.jpg)
+![Vista de transacciones de Clovance](./images/clovance-screenshot-01.jpg)
 
 ## ✨ ¿Qué puedes hacer con Clovance?
 
@@ -19,8 +23,8 @@ Clovance te ayuda a llevar el control de tu dinero sin renunciar a tu privacidad
 - 🌍 **Interfaz en inglés y español.**
 - 🔒 **Autenticación segura** (JWT) y datos bajo tu control.
 
-![Clovance](./images/clovance-screenshot-02.jpg)
-![Clovance](./images/clovance-screenshot-03.jpg)
+![Panel de resumen de Clovance](./images/clovance-screenshot-02.jpg)
+![Flujo de caja y ranking de cuentas de Clovance](./images/clovance-screenshot-03.jpg)
 
 ## 🔒 Privacidad y self-hosting
 
@@ -43,7 +47,7 @@ curl -fsSL https://evaristocuesta.github.io/clovance/install/install.sh | sh
 irm https://evaristocuesta.github.io/clovance/install/install.ps1 | iex
 ```
 
-Los scripts también soportan `uninstall` y `update`. Guía completa: [Installation Guide](./INSTALL.md). Configuración manual: [Docker Usage Guide](./DOCKER_USAGE.md).
+Los scripts también soportan `uninstall` y `update`. Guía completa: [Guía de instalación](./INSTALL.es.html). Configuración manual: [Guía de uso con Docker](./DOCKER_USAGE.es.html).
 
 ## ❓ Preguntas frecuentes
 
@@ -53,7 +57,7 @@ Los scripts también soportan `uninstall` y `update`. Guía completa: [Installat
 
 **¿Dónde se guardan mis datos?** En una base de datos PostgreSQL que corre en tu propio servidor/contenedor.
 
-**¿Cómo hago copias de seguridad?** Respaldando el volumen de datos de PostgreSQL (ver [Docker Usage Guide](./DOCKER_USAGE.md)).
+**¿Cómo hago copias de seguridad?** Respaldando el volumen de datos de PostgreSQL (ver [Guía de uso con Docker](./DOCKER_USAGE.es.html)).
 
 **¿Es gratis?** Sí, open source bajo Apache 2.0. Sin costes de licencia.
 
@@ -91,6 +95,6 @@ Publicar versión: `.\scripts\publish-version.ps1 -Version "1.0.0"`.
 
 Imágenes Docker: `ghcr.io/evaristocuesta/clovance/clovance-api` y `.../clovance-frontend`.
 
-Más: [Docker Publishing](./DOCKER_PUBLISH.md) · [Versioning](./VERSIONING_EXAMPLES.md).
+Más: [Publicación de Docker](./DOCKER_PUBLISH.es.html) · [Versionado](./VERSIONING_EXAMPLES.es.html).
 
 </details>

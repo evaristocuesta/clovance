@@ -1,3 +1,10 @@
+---
+title: Publishing Docker Images
+description: How Clovance publishes Docker images to GitHub Container Registry (GHCR) with GitHub Actions.
+lang: en
+translation: /DOCKER_PUBLISH.es.html
+---
+
 # Publishing Docker Images with GitHub Actions
 
 This document explains how automatic publishing of Docker images to GitHub Container Registry (GHCR) works.
@@ -161,7 +168,7 @@ The workflow requires the following permissions (already configured):
 - `contents: read` - To clone the repository
 - `packages: write` - To publish to GHCR
 
-It automatically uses `${{ secrets.GITHUB_TOKEN }}`, which GitHub generates for every workflow run.
+It automatically uses {% raw %}`${{ secrets.GITHUB_TOKEN }}`{% endraw %}, which GitHub generates for every workflow run.
 
 ## 🔄 Semantic Versioning
 
