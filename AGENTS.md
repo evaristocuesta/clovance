@@ -5,6 +5,7 @@ Personal finance app: .NET 10 + Aspire backend (`api/`), Angular 22 frontend (`f
 ## Working agreement
 
 - Never run `git commit`, `git push` or `gh pr create` without asking the user first. Make the change, verify it, show the diff and wait for approval.
+- Every commit belongs to a GitHub issue, and the issue comes first: it must already exist before you branch, commit or open the PR. Reference it in the commit message and in the PR body (`#123`, `Closes #123` or `Part of #123`), so the issue timeline links the commits. If the user asks for a commit and no issue exists, stop and ask for the issue (or ask to create it) instead of committing unprompted.
 
 ## Running the app
 
