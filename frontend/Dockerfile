@@ -36,8 +36,9 @@ USER root
 # has no load_module and the template uses none of them), and they drag in an XML
 # parser, an image toolkit and a JavaScript engine: libxslt/libxml2 for xslt, libgd ->
 # fontconfig -> libexpat for image-filter, libGeoIP, and njs itself. This container only
-# serves static files and reverse-proxies /api, so drop them; libxml2's open CVEs
-# (CVE-2026-86140 among them, none fixed upstream) and libexpat's go with them.
+# serves static files and reverse-proxies /api, so none of that belongs in the runtime.
+# Alpine has since published fixes for libxml2 (2.13.9-r4 and later) and libexpat
+# (2.11.0), but removing the packages still beats carrying parsers nothing calls.
 RUN apk del --no-network nginx-module-xslt nginx-module-njs nginx-module-image-filter nginx-module-geoip \
 	&& rm -rf /var/cache/apk
 
