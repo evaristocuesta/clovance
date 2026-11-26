@@ -1,0 +1,19 @@
+---
+layout: default
+---
+{% include hero.html %}
+
+<article class="doc-card">
+  <div class="doc-body">
+    {{ content }}
+  </div>
+
+  {% assign repo_url = site.github.repository_url | default: 'https://github.com/evaristocuesta/clovance' %}
+  {% if page.path %}
+    <div class="doc-footer">
+      <a class="edit-link" href="{{ repo_url }}/blob/main/docs/{{ page.path }}" target="_blank" rel="noopener">
+        Edit this page on GitHub
+      </a>
+    </div>
+  {% endif %}
+</article>

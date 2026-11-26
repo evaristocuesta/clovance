@@ -1,0 +1,37 @@
+{% assign repo_url = site.github.repository_url | default: 'https://github.com/evaristocuesta/clovance' %}
+{% assign is_es = false %}
+{% if page.lang == 'es' %}{% assign is_es = true %}{% endif %}
+{% assign en_url = page.url %}
+{% assign es_url = page.url %}
+{% if is_es %}
+  {% assign en_url = page.translation | default: '/' %}
+{% else %}
+  {% assign es_url = page.translation | default: '/index.es.html' %}
+{% endif %}
+<header class="topbar">
+  <button class="icon-btn sidebar-toggle" type="button" data-sidebar-toggle aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">
+    {% include icon.html name="menu" %}
+  </button>
+
+  <a class="brand" href="{% if page.lang == 'es' %}{{ '/index.es.html' | relative_url }}{% else %}{{ '/' | relative_url }}{% endif %}" aria-label="{% if page.lang == 'es' %}Inicio de la documentación de Clovance{% else %}Clovance documentation home{% endif %}">
+    <span class="brand-logo brand-logo-full">{% include logo-full.html %}</span>
+    <span class="brand-logo brand-logo-mark">{% include logo.html %}</span>
+    <span class="brand-label">Docs</span>
+  </a>
+
+  <div class="topbar-actions">
+    <div class="lang-switch" role="group" aria-label="{% if is_es %}Idioma{% else %}Language{% endif %}">
+      <a class="lang-link{% unless is_es %} is-active{% endunless %}" href="{{ en_url | relative_url }}" hreflang="en"{% unless is_es %} aria-current="true"{% endunless %}>EN</a>
+      <a class="lang-link{% if is_es %} is-active{% endif %}" href="{{ es_url | relative_url }}" hreflang="es"{% if is_es %} aria-current="true"{% endif %}>ES</a>
+    </div>
+
+    <a class="icon-btn" href="{{ repo_url }}" target="_blank" rel="noopener" aria-label="{% if page.lang == 'es' %}Ver Clovance en GitHub{% else %}View Clovance on GitHub{% endif %}" title="{% if page.lang == 'es' %}Ver en GitHub{% else %}View on GitHub{% endif %}">
+      {% include icon.html name="github" %}
+    </a>
+
+    <button class="icon-btn theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" title="Toggle dark mode">
+      <span class="icon-sun">{% include icon.html name="sun" %}</span>
+      <span class="icon-moon">{% include icon.html name="moon" %}</span>
+    </button>
+  </div>
+</header>

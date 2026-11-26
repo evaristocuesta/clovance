@@ -1,0 +1,35 @@
+{% assign repo_url = site.github.repository_url | default: 'https://github.com/evaristocuesta/clovance' %}
+{% assign is_es = false %}
+{% if page.lang == 'es' %}{% assign is_es = true %}{% endif %}
+{% assign nav_lang = page.lang | default: 'en' %}
+{% assign nav_sections = site.nav[nav_lang] | default: site.nav.en %}
+<aside class="sidebar" id="sidebar" aria-label="{% if is_es %}Navegación de documentación{% else %}Documentation navigation{% endif %}">
+  <nav class="sidebar-nav">
+    {% for section in nav_sections %}
+      <div class="nav-section">
+        <p class="nav-section-title">{{ section.section }}</p>
+        <ul class="nav-list">
+          {% for item in section.items %}
+            <li>
+              <a class="nav-item{% if page.url == item.url %} is-active{% endif %}" href="{{ item.url | relative_url }}"{% if page.url == item.url %} aria-current="page"{% endif %}>
+                {% include icon.html name=item.icon %}
+                <span>{{ item.title }}</span>
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endfor %}
+  </nav>
+
+  <div class="sidebar-card">
+    <p class="sidebar-card-title">{% if is_es %}Código abierto{% else %}Open source{% endif %}</p>
+    <p class="sidebar-card-text">
+      {% if is_es %}Clovance es gratis, self-hosted y tiene licencia Apache 2.0.{% else %}Clovance is free, self-hosted and licensed under Apache 2.0.{% endif %}
+    </p>
+    <a class="btn btn-solid btn-sm" href="{{ repo_url }}" target="_blank" rel="noopener">
+      {% include icon.html name="github" %}
+      <span>{% if is_es %}Danos una estrella{% else %}Star on GitHub{% endif %}</span>
+    </a>
+  </div>
+</aside>

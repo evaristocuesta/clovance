@@ -1,0 +1,22 @@
+---
+layout: default
+---
+{% assign repo_url = site.github.repository_url | default: 'https://github.com/evaristocuesta/clovance' %}
+<article class="doc-card">
+  <div class="doc-eyebrow">
+    <span>{% if page.lang == 'es' %}Documentación{% else %}Documentation{% endif %}</span>
+    {% if page.lang == 'es' %}<span class="badge">Español</span>{% endif %}
+  </div>
+
+  <div class="doc-body">
+    {{ content }}
+  </div>
+
+  {% if page.path %}
+    <div class="doc-footer">
+      <a class="edit-link" href="{{ repo_url }}/blob/main/docs/{{ page.path }}" target="_blank" rel="noopener">
+        Edit this page on GitHub
+      </a>
+    </div>
+  {% endif %}
+</article>

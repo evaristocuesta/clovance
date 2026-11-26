@@ -2,3 +2,7 @@
 
 # Visual Studio
 .vs/*
+
+# Jekyll build output (GitHub Pages)
+docs/_site/
+docs/.jekyll-cache/

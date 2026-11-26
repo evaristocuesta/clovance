@@ -1,0 +1,60 @@
+{% assign is_es = false %}
+{% if page.lang == 'es' %}{% assign is_es = true %}{% endif %}
+{% assign repo_url = site.github.repository_url | default: 'https://github.com/evaristocuesta/clovance' %}
+{% if is_es %}
+  {% assign other_url = page.translation | default: '/' %}
+{% else %}
+  {% assign other_url = page.translation | default: '/index.es.html' %}
+{% endif %}
+
+<section class="hero">
+  <div class="hero-glow hero-glow-one" aria-hidden="true"></div>
+  <div class="hero-glow hero-glow-two" aria-hidden="true"></div>
+
+  <div class="hero-top">
+    <span class="hero-badge">
+      {% if is_es %}Código abierto · Self-hosted · Apache 2.0{% else %}Open source · Self-hosted · Apache 2.0{% endif %}
+    </span>
+    <a class="hero-lang" href="{{ other_url | relative_url }}">
+      {% include icon.html name="language" %}
+      <span>{% if is_es %}Read in English{% else %}Leer en español{% endif %}</span>
+    </a>
+  </div>
+
+  <div class="hero-logo">{% include logo-full.html %}</div>
+
+  <h1 class="hero-tagline">
+    {% if is_es %}
+      {{ page.tagline | default: 'Tus finanzas personales, en tu propio servidor.' }}
+    {% else %}
+      {{ page.tagline | default: 'Your personal finances, on your own server.' }}
+    {% endif %}
+  </h1>
+  {% if page.hero_sub %}
+    <p class="hero-sub">{{ page.hero_sub }}</p>
+  {% endif %}
+
+  <div class="install-block">
+    <div class="install-tabs" role="group" aria-label="{% if is_es %}Comando de instalación{% else %}Install command{% endif %}">
+      <button class="install-tab is-active" type="button" aria-pressed="true" data-install-tab data-cmd="unix">Linux / macOS</button>
+      <button class="install-tab" type="button" aria-pressed="false" data-install-tab data-cmd="win">Windows</button>
+    </div>
+    <div class="install-command">
+      <code data-install-cmd>curl -fsSL https://evaristocuesta.github.io/clovance/install/install.sh | sh</code>
+      <button class="copy-btn" type="button" data-copy aria-label="{% if is_es %}Copiar comando de instalación{% else %}Copy install command{% endif %}">{% if is_es %}Copiar{% else %}Copy{% endif %}</button>
+    </div>
+  </div>
+
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="{{ '/INSTALL.html' | relative_url }}">
+      {% if is_es %}Instalar Clovance{% else %}Install Clovance{% endif %}
+    </a>
+    <a class="btn btn-ghost" href="{{ '/DOCKER_USAGE.html' | relative_url }}">
+      {% if is_es %}Uso con Docker{% else %}Docker usage{% endif %}
+    </a>
+    <a class="btn btn-ghost" href="{{ repo_url }}" target="_blank" rel="noopener">
+      {% include icon.html name="github" %}
+      <span>GitHub</span>
+    </a>
+  </div>
+</section>
