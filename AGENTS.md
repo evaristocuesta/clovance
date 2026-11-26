@@ -2,6 +2,10 @@
 
 Personal finance app: .NET 10 + Aspire backend (`api/`), Angular 22 frontend (`frontend/`). En, es locales. Docker is required for local dev and integration tests.
 
+## Working agreement
+
+- Never run `git commit`, `git push` or `gh pr create` without asking the user first. Make the change, verify it, show the diff and wait for approval.
+
 ## Running the app
 
 - Start everything: `cd api/aspire/Clovance.AppHost && dotnet run` (API + frontend + PostgreSQL/pgWeb + Aspire dashboard; frontend on port 7000, API health at `/health`). Requires Docker running — the AppHost uses `AddDockerComposeEnvironment`.
