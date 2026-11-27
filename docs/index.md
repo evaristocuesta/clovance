@@ -1,6 +1,7 @@
 ---
 layout: home
 title: Clovance
+seo_title: Clovance — Self-hosted personal finance app
 description: Clovance is a self-hosted, open-source personal finance app. Track expenses, income, accounts, transfers and loans with your data on your own server.
 lang: en
 translation: /index.es.html
@@ -10,7 +11,7 @@ hero_sub: Record expenses and income, manage multiple accounts, transfer between
 
 Clovance helps you stay in control of your money without giving up your privacy: record expenses and income, manage multiple accounts, transfer between them, track loans, and analyze your spending patterns. **Your data stays on your server**, not in someone else's cloud, and **there's no monthly subscription**.
 
-![Clovance transactions view](./images/clovance-screenshot-01.jpg)
+<img src="./images/clovance-screenshot-01.jpg" alt="Clovance transactions view" width="1283" height="608" decoding="async">
 
 ## ✨ What can you do with Clovance?
 
@@ -23,8 +24,8 @@ Clovance helps you stay in control of your money without giving up your privacy:
 - 🌍 **Interface in English and Spanish.**
 - 🔒 **Secure authentication** and data under your control.
 
-![Clovance summary dashboard](./images/clovance-screenshot-02.jpg)
-![Clovance cash flow and account ranking](./images/clovance-screenshot-03.jpg)
+<img src="./images/clovance-screenshot-02.jpg" alt="Clovance summary dashboard" width="1279" height="671" loading="lazy" decoding="async">
+<img src="./images/clovance-screenshot-03.jpg" alt="Clovance cash flow and account ranking" width="1281" height="877" loading="lazy" decoding="async">
 
 ## 🔒 Privacy & self-hosting
 
