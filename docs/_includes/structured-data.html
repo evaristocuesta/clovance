@@ -1,0 +1,64 @@
+{% assign site_url = '/' | absolute_url %}
+{% assign repo_url = 'https://github.com/evaristocuesta/clovance' %}
+{% assign page_description = page.description | default: site.description %}
+{% if page.lang == 'es' %}
+  {% assign home_url = '/index.es.html' | absolute_url %}
+  {% assign home_name = 'Inicio' %}
+{% else %}
+  {% assign home_url = site_url %}
+  {% assign home_name = 'Home' %}
+{% endif %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+  {% if page.layout == 'home' %}
+    {
+      "@type": "WebSite",
+      "@id": "{{ site_url }}#website",
+      "url": "{{ site_url }}",
+      "name": {{ site.title | jsonify }},
+      "description": {{ page_description | jsonify }},
+      "inLanguage": ["en", "es"]
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "{{ site_url }}#software",
+      "name": "Clovance",
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "Docker",
+      "description": {{ page_description | jsonify }},
+      "url": "{{ site_url }}",
+      "license": "{{ repo_url }}/blob/main/LICENSE.md",
+      "screenshot": "{{ '/images/clovance-screenshot-01.jpg' | absolute_url }}",
+      "inLanguage": ["en", "es"],
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "sameAs": ["{{ repo_url }}"]
+    }
+  {% else %}
+    {
+      "@type": "BreadcrumbList",
+      "@id": "{{ page.url | absolute_url }}#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": {{ home_name | jsonify }},
+          "item": "{{ home_url }}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": {{ page.title | jsonify }},
+          "item": "{{ page.url | absolute_url }}"
+        }
+      ]
+    }
+  {% endif %}
+  ]
+}
+</script>
