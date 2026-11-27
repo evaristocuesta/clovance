@@ -4,6 +4,9 @@ baseurl: "/clovance"
 url: "https://evaristocuesta.github.io"
 lang: en-US
 
+# Search engine verification.
+google_site_verification: "UwdV1h_Dt6qT6IfJtkRer0Anqn0vDoC8w1xwwHiga0A"
+
 # Repository metadata used by the layout (header, footer and "edit this page" links).
 github:
   is_project_page: true
