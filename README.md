@@ -8,13 +8,13 @@
 **Your personal finances, on your own server.** Open source, self-hosted, installable with a single command.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE.md)
-[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](docs/DOCKER_USAGE.md)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](https://evaristocuesta.github.io/clovance/DOCKER_USAGE.html)
 [![Self-hosted](https://img.shields.io/badge/Self--hosted-yes-2ea44f)](#)
 [![Languages](https://img.shields.io/badge/UI-English%20%7C%20Espa%C3%B1ol-informational)](#)
 
 Clovance helps you stay in control of your money without giving up your privacy: record expenses and income, manage multiple accounts, transfer between them, track loans, and analyze your spending patterns. **Your data stays on your server**, not in someone else's cloud, and **there's no monthly subscription**.
 
-📖 [Leer en español](README.es.md)
+📖 [Leer en español](README.es.md) · **Documentation:** [evaristocuesta.github.io/clovance](https://evaristocuesta.github.io/clovance/)
 
 ![Clovance](docs/images/clovance-screenshot-01.jpg)
 
@@ -52,7 +52,7 @@ curl -fsSL https://evaristocuesta.github.io/clovance/install/install.sh | sh
 irm https://evaristocuesta.github.io/clovance/install/install.ps1 | iex
 ```
 
-The scripts also support `uninstall` and `update`. Full guide: [Installation Guide](docs/INSTALL.md). Manual setup with Docker Compose: [Docker Usage Guide](docs/DOCKER_USAGE.md).
+The scripts also support `uninstall` and `update`. Full guide: [Installation Guide](https://evaristocuesta.github.io/clovance/INSTALL.html). Manual setup with Docker Compose: [Docker Usage Guide](https://evaristocuesta.github.io/clovance/DOCKER_USAGE.html).
 
 ## 🖼️ Screenshots
 
@@ -67,7 +67,7 @@ The scripts also support `uninstall` and `update`. Full guide: [Installation Gui
 
 **Where is my data stored?** In a PostgreSQL database running on your own server/container.
 
-**How do I back up?** Back up the PostgreSQL data volume (see [Docker Usage Guide](docs/DOCKER_USAGE.md)).
+**How do I back up?** Back up the PostgreSQL data volume (see [Docker Usage Guide](https://evaristocuesta.github.io/clovance/DOCKER_USAGE.html)).
 
 **Is it free?** Yes, open source under Apache 2.0. No license fees.
 
@@ -131,6 +131,6 @@ Creates a tag and triggers the GitHub Actions workflow that publishes Docker ima
 - `ghcr.io/evaristocuesta/clovance/clovance-api`
 - `ghcr.io/evaristocuesta/clovance/clovance-frontend`
 
-More details: [Docker Publishing](docs/DOCKER_PUBLISH.md) · [Versioning](docs/VERSIONING_EXAMPLES.md)
+More details: [Docker Publishing](https://evaristocuesta.github.io/clovance/DOCKER_PUBLISH.html) · [Versioning](https://evaristocuesta.github.io/clovance/VERSIONING_EXAMPLES.html)
 
 </details>
