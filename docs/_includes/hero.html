@@ -3,8 +3,12 @@
 {% assign repo_url = site.github.repository_url | default: 'https://github.com/evaristocuesta/clovance' %}
 {% if is_es %}
   {% assign other_url = page.translation | default: '/' %}
+  {% assign install_url = '/INSTALL.es.html' %}
+  {% assign docker_url = '/DOCKER_USAGE.es.html' %}
 {% else %}
   {% assign other_url = page.translation | default: '/index.es.html' %}
+  {% assign install_url = '/INSTALL.html' %}
+  {% assign docker_url = '/DOCKER_USAGE.html' %}
 {% endif %}
 
 <section class="hero">
@@ -46,10 +50,10 @@
   </div>
 
   <div class="hero-actions">
-    <a class="btn btn-primary" href="{{ '/INSTALL.html' | relative_url }}">
+    <a class="btn btn-primary" href="{{ install_url | relative_url }}">
       {% if is_es %}Instalar Clovance{% else %}Install Clovance{% endif %}
     </a>
-    <a class="btn btn-ghost" href="{{ '/DOCKER_USAGE.html' | relative_url }}">
+    <a class="btn btn-ghost" href="{{ docker_url | relative_url }}">
       {% if is_es %}Uso con Docker{% else %}Docker usage{% endif %}
     </a>
     <a class="btn btn-ghost" href="{{ repo_url }}" target="_blank" rel="noopener">

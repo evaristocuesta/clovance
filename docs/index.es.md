@@ -1,7 +1,8 @@
 ---
 layout: home
 title: Clovance
-description: Clovance es una app de finanzas personales self-hosted y open source. Controla gastos, ingresos, cuentas, transferencias y préstamos con tus datos en tu propio servidor.
+seo_title: Clovance — Finanzas personales autoalojadas
+description: Clovance es una app de finanzas personales self-hosted y open source para controlar gastos, ingresos, cuentas, transferencias y préstamos en tu servidor.
 lang: es
 translation: /
 tagline: Tus finanzas personales, en tu propio servidor.
@@ -10,7 +11,7 @@ hero_sub: Registra gastos e ingresos, gestiona varias cuentas, transfiere entre 
 
 Clovance te ayuda a llevar el control de tu dinero sin renunciar a tu privacidad: registra gastos e ingresos, gestiona varias cuentas, transfiere entre ellas, controla préstamos y analiza tus patrones de gasto. **Tus datos se quedan en tu servidor**, no en la nube de nadie, y **no hay suscripción mensual**.
 
-![Vista de transacciones de Clovance](./images/clovance-screenshot-01.jpg)
+<img src="./images/clovance-screenshot-01.jpg" alt="Vista de transacciones de Clovance" width="1283" height="608" decoding="async">
 
 ## ✨ ¿Qué puedes hacer con Clovance?
 
@@ -23,8 +24,8 @@ Clovance te ayuda a llevar el control de tu dinero sin renunciar a tu privacidad
 - 🌍 **Interfaz en inglés y español.**
 - 🔒 **Autenticación segura** (JWT) y datos bajo tu control.
 
-![Panel de resumen de Clovance](./images/clovance-screenshot-02.jpg)
-![Flujo de caja y ranking de cuentas de Clovance](./images/clovance-screenshot-03.jpg)
+<img src="./images/clovance-screenshot-02.jpg" alt="Panel de resumen de Clovance" width="1279" height="671" loading="lazy" decoding="async">
+<img src="./images/clovance-screenshot-03.jpg" alt="Flujo de caja y ranking de cuentas de Clovance" width="1281" height="877" loading="lazy" decoding="async">
 
 ## 🔒 Privacidad y self-hosting
 
